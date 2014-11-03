@@ -5,7 +5,6 @@
 //
 // TODO
 // use config.when( env ).useFile()
-// add config.get('object.key.etc') accessor
 // lowercase all keys
 // add debug mode to trace key overwrites
 // ------------------------------------------------------
@@ -28,7 +27,7 @@
     // ----------------------------
     var _configData = false;
     var _options = {};
-    var _environment = {};
+    var _environment = false;
 
 
     // ----------------------------
@@ -50,6 +49,11 @@
     // Environment Switching:
     // Ignores config settings that aren't for the current environment
     // ----------------------------
+
+    function _environmentSearch( search ){
+        _environment = env.search( search );
+    }
+
     function _useEnvironment( environment ){
         _environment = environment;
         return this;
@@ -222,6 +226,7 @@
     // Expose public functions
     // ----------------------------
     exports.setOptions = _setOptions;
+    exports.environmentSearch = _environmentSearch;
     exports.getEnvironment = _getEnvironment;
     exports.useEnvironment = _useEnvironment;
     exports.useFile = _useFile;
