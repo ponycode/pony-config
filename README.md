@@ -1,4 +1,4 @@
-pony-config.js
+pony-config
 ==============
 
-Very small config loader
+Very small config loader for Node
