@@ -1,5 +1,5 @@
 {
-  "name": "pony-config.js",
+  "name": "pony-config",
   "version": "0.0.0",
   "description": "Small configuration loader",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://homedad@github.com/homedad/pony-config.js.git"
+    "url": "https://homedad@github.com/homedad/pony-config.git"
   },
   "keywords": [
     "config",
@@ -18,7 +18,7 @@
   "author": "PonyCode Corporation",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/homedad/pony-config.js/issues"
+    "url": "https://github.com/homedad/pony-config/issues"
   },
-  "homepage": "https://github.com/homedad/pony-config.js"
+  "homepage": "https://github.com/homedad/pony-config"
 }

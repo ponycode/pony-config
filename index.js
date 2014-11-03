@@ -12,14 +12,20 @@
 
 ( function(){
 
+    // ----------------------------
     // External dependencies
+    // ----------------------------
     var _ = require('underscore');
     var fs = require('fs');
 
+    // ----------------------------
     // Local dependencies
+    // ----------------------------
     var env = require('./lib/env.js');
 
-    // State
+    // ----------------------------
+    // Configuration State, Module-Global by design
+    // ----------------------------
     var _configData = false;
     var _options = {};
     var _environment = {};
@@ -28,7 +34,6 @@
     // ----------------------------
     // Each application of config data overwrites previous values for that key
     // ----------------------------
-
     function _applyConfigData( configData ){
         _configData = _.extend( {}, _configData, configData );
     }
@@ -37,7 +42,6 @@
     // Options:
     //  debug - logs configuration changes
     // ----------------------------
-
     function _setOptions( options ){
         _options = options || {};
     }
@@ -46,7 +50,6 @@
     // Environment Switching:
     // Ignores config settings that aren't for the current environment
     // ----------------------------
-
     function _useEnvironment( environment ){
         _environment = environment;
         return this;
@@ -75,7 +78,6 @@
     // ----------------------------
     // Set configuration from a file
     // ----------------------------
-
     function _useFile( configFileName, environments ){
         if( _environment === false ){
             throw { 'message': 'Must set environment before loading config data', 'name' : 'CONFIG Misuse' };
@@ -90,7 +92,6 @@
     // ----------------------------
     // Set configuration from an OS environment variable
     // ----------------------------
-
     function _useEnvironmentVar( key, envVariableName, environments ){
         if( _environment === false ){
             throw { 'message': 'Must set environment before applying environment variables', 'name' : 'CONFIG Misuse' };
@@ -101,11 +102,9 @@
         }
     }
 
-
     // ----------------------------
     // Set configuration using an object
     // ----------------------------
-
     function _useObject( configData, environments ){
         if( _environment === false ){
             throw { 'message': 'Must set environment before applying environment variables', 'name' : 'CONFIG Misuse' };
@@ -119,7 +118,6 @@
     // ----------------------------
     // Set configuration using an dot-path key, eg. (tree.height, 25)
     // ----------------------------
-
     function _set( configKey, configValue ){
         if( configKey.indexOf('.') > 0 ){
             _setValueForDottedKeyPath( _configData, configValue, configKey.split('.') );
@@ -131,7 +129,6 @@
     // ----------------------------
     // Get config with a dot-path key, e.g., get( tree.height )
     // ----------------------------
-
     function _get( configKey, defaultValue ){
         if( !_.isString(configKey) ) return defaultValue;
         if( _configData === false ) return defaultValue;
@@ -150,7 +147,6 @@
     // ----------------------------
     // Log the current configuration
     // ----------------------------
-
     function _list(){
 
         var keys = _.keys( _configData );
@@ -167,7 +163,6 @@
     // ----------------------------
     // Helper to parse a config file
     // ----------------------------
-
     function _loadAndApplyConfigFile( configFileName ){
         var configFileData = false;
 
@@ -190,7 +185,6 @@
     // ----------------------------
     // Helper to set config with a dot-path key
     // ----------------------------
-
     function _setValueForDottedKeyPath( targetData, configValue, configKeyPathComponents ){
         if( configKeyPathComponents.length === 1){
             targetData[ configKeyPathComponents ] = configValue;
@@ -209,7 +203,6 @@
     // ----------------------------
     // Helper to get config with a dot-path key
     // ----------------------------
-
     function _getValueForDottedKeyPath( sourceData, configKeyPathComponents ){
         if( configKeyPathComponents.length === 1 ){
             return sourceData[configKeyPathComponents[0]];
@@ -228,7 +221,6 @@
     // ----------------------------
     // Expose public functions
     // ----------------------------
-
     exports.setOptions = _setOptions;
     exports.getEnvironment = _getEnvironment;
     exports.useEnvironment = _useEnvironment;
