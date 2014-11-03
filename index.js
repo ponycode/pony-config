@@ -43,6 +43,7 @@
     // ----------------------------
     function _setOptions( options ){
         _options = options || {};
+        return this;
     }
 
     // ----------------------------
@@ -52,6 +53,7 @@
 
     function _environmentSearch( search ){
         _environment = env.search( search );
+        return this;
     }
 
     function _useEnvironment( environment ){
@@ -90,7 +92,7 @@
         if( _shouldApplyConfig( environments ) ){
             _loadAndApplyConfigFile( configFileName );
         }
-
+        return this;
     }
 
     // ----------------------------
@@ -104,6 +106,7 @@
         if( _shouldApplyConfig( environments ) && process.env[ envVariableName ] !== undefined ){
             _set( key, process.env[ envVariableName ] );
         }
+        return this;
     }
 
     // ----------------------------
@@ -117,6 +120,22 @@
         if( _shouldApplyConfig( environments ) ){
             _applyConfigData( configData );
         }
+        return this;
+    }
+
+    // ----------------------------
+    // Log the current configuration
+    // ----------------------------
+    function _list(){
+        var keys = _.keys( _configData );
+        console.log('------------------------------------');
+        console.log( 'CONFIG: [' + _environment + ']' );
+        for( var i = 0; i < keys.length; i++ ){
+            var key = keys[i];
+            console.log( '\t' + key + ': ' + require('util').inspect(_configData[key], true, 10) );
+        }
+        console.log('------------------------------------');
+        return this;
     }
 
     // ----------------------------
@@ -128,6 +147,7 @@
         }else{
             _configData[ configKey ] = configValue;
         }
+        return this;
     }
 
     // ----------------------------
@@ -148,21 +168,6 @@
         return ( configValue === undefined ) ?  defaultValue : configValue;
     }
 
-    // ----------------------------
-    // Log the current configuration
-    // ----------------------------
-    function _list(){
-
-        var keys = _.keys( _configData );
-        console.log('------------------------------------');
-        console.log( 'CONFIG: [' + _environment + ']' );
-        for( var i = 0; i < keys.length; i++ ){
-            var key = keys[i];
-            console.log( '\t' + key + ': ' + require('util').inspect(_configData[key], true, 10) );
-        }
-        console.log('------------------------------------');
-
-    }
 
     // ----------------------------
     // Helper to parse a config file
