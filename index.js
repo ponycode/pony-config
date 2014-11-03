@@ -6,7 +6,7 @@
 // TODO
 // use config.when( env ).useFile()
 // lowercase all keys
-// add debug mode to trace key overwrites
+// add debug mode to trace key overwrites (probably requires rewriting 'extend')
 // ------------------------------------------------------
 
 ( function(){
@@ -28,6 +28,7 @@
     var _configData = false;
     var _options = {};
     var _environment = false;
+    var _whenEnvironments = undefined;
 
 
     // ----------------------------
@@ -82,14 +83,30 @@
     }
 
     // ----------------------------
+    // When Clause - use to set environment context for useX commands
+    // ----------------------------
+    function _when( environments ){
+        _whenEnvironments = environments;
+        return this;
+    }
+
+    // ----------------------------
+    // Always Clause - use to set environment context for useX commands
+    // ----------------------------
+    function _always(){
+        _whenEnvironments = undefined;
+        return this;
+    }
+
+    // ----------------------------
     // Set configuration from a file
     // ----------------------------
-    function _useFile( configFileName, environments ){
+    function _useFile( configFileName ){
         if( _environment === false ){
             throw { 'message': 'Must set environment before loading config data', 'name' : 'CONFIG Misuse' };
         }
 
-        if( _shouldApplyConfig( environments ) ){
+        if( _shouldApplyConfig( _whenEnvironments ) ){
             _loadAndApplyConfigFile( configFileName );
         }
         return this;
@@ -98,12 +115,12 @@
     // ----------------------------
     // Set configuration from an OS environment variable
     // ----------------------------
-    function _useEnvironmentVar( key, envVariableName, environments ){
+    function _useEnvironmentVar( key, envVariableName ){
         if( _environment === false ){
             throw { 'message': 'Must set environment before applying environment variables', 'name' : 'CONFIG Misuse' };
         }
 
-        if( _shouldApplyConfig( environments ) && process.env[ envVariableName ] !== undefined ){
+        if( _shouldApplyConfig( _whenEnvironments ) && process.env[ envVariableName ] !== undefined ){
             _set( key, process.env[ envVariableName ] );
         }
         return this;
@@ -112,12 +129,12 @@
     // ----------------------------
     // Set configuration using an object
     // ----------------------------
-    function _useObject( configData, environments ){
+    function _useObject( configData ){
         if( _environment === false ){
             throw { 'message': 'Must set environment before applying environment variables', 'name' : 'CONFIG Misuse' };
         }
 
-        if( _shouldApplyConfig( environments ) ){
+        if( _shouldApplyConfig( _whenEnvironments ) ){
             _applyConfigData( configData );
         }
         return this;
@@ -234,6 +251,8 @@
     exports.environmentSearch = _environmentSearch;
     exports.getEnvironment = _getEnvironment;
     exports.useEnvironment = _useEnvironment;
+    exports.when = _when;
+    exports.always = _always;
     exports.useFile = _useFile;
     exports.useObject = _useObject;
     exports.useEnvironmentVar = _useEnvironmentVar;
