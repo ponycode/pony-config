@@ -10,7 +10,8 @@ config
     .setOptions( { debug: true } )
     .environmentSearch( { paths:['./example-env-file'], env: 'ENVIRONMENT', default:'prod', debug: true} )
     .useObject( {'organization': 'PonyCode' } )
-    .useFile( 'example-config.json', ['dev'] )
+    .useFile( 'example-dev-config.json', ['dev'] )
+    .useFile( 'example-prod-config.json', ['prod','stage'] )
     .list();
 
 console.log('');
