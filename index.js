@@ -52,7 +52,7 @@
     // Ignores config settings that aren't for the current environment
     // ----------------------------
 
-    function _environmentSearch( search ){
+    function _findEnvironment( search ){
         _environment = env.search( search );
         return this;
     }
@@ -240,7 +240,7 @@
     // Expose public functions
     // ----------------------------
     exports.setOptions = _setOptions;
-    exports.environmentSearch = _environmentSearch;
+    exports.findEnvironment = _findEnvironment;
     exports.getEnvironment = _getEnvironment;
     exports.useEnvironment = _useEnvironment;
     exports.when = _when;
