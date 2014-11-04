@@ -1,6 +1,6 @@
 {
   "name": "pony-config",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Small configuration loader",
   "main": "index.js",
   "scripts": {
@@ -20,5 +20,13 @@
   "bugs": {
     "url": "https://github.com/homedad/pony-config/issues"
   },
-  "homepage": "https://github.com/homedad/pony-config"
+  "homepage": "https://github.com/homedad/pony-config",
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-contrib-nodeunit": "~0.4.1"
+  },
+  "dependencies": {
+    "underscore": "~1.7.0"
+  }
 }

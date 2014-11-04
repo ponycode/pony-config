@@ -1,5 +1,5 @@
-// ------------------------------------------------------
-// Config loader
+// Pony Config Configuration Module
+//
 // (c) 2014 PonyCode Corporation
 // License to distribute freely
 //
@@ -25,10 +25,10 @@
     // ----------------------------
     // Configuration State, Module-Global by design
     // ----------------------------
-    var _configData = false;
+    var _configData = {};
     var _options = {};
-    var _environment = false;
-    var _whenEnvironments = undefined;
+    var _environment = false;               // by default no environment is selected
+    var _whenEnvironments = false;
 
 
     // ----------------------------
@@ -68,7 +68,7 @@
 
     function _shouldApplyConfig( environments ){
 
-        if( environments === undefined ) return true;
+        if( environments === undefined || environments === false ) return true; // unspecified environments are always added
 
         if( _.isString( environments )) environments = [ environments ];
 
@@ -94,7 +94,7 @@
     // Always Clause - use to set environment context for useX commands
     // ----------------------------
     function _always(){
-        _whenEnvironments = undefined;
+        _whenEnvironments = false;
         return this;
     }
 
@@ -102,10 +102,6 @@
     // Set configuration from a file
     // ----------------------------
     function _useFile( configFileName ){
-        if( _environment === false ){
-            throw { 'message': 'Must set environment before loading config data', 'name' : 'CONFIG Misuse' };
-        }
-
         if( _shouldApplyConfig( _whenEnvironments ) ){
             _loadAndApplyConfigFile( configFileName );
         }
@@ -116,10 +112,6 @@
     // Set configuration from an OS environment variable
     // ----------------------------
     function _useEnvironmentVar( key, envVariableName ){
-        if( _environment === false ){
-            throw { 'message': 'Must set environment before applying environment variables', 'name' : 'CONFIG Misuse' };
-        }
-
         if( _shouldApplyConfig( _whenEnvironments ) && process.env[ envVariableName ] !== undefined ){
             _set( key, process.env[ envVariableName ] );
         }
@@ -130,10 +122,6 @@
     // Set configuration using an object
     // ----------------------------
     function _useObject( configData ){
-        if( _environment === false ){
-            throw { 'message': 'Must set environment before applying environment variables', 'name' : 'CONFIG Misuse' };
-        }
-
         if( _shouldApplyConfig( _whenEnvironments ) ){
             _applyConfigData( configData );
         }
@@ -146,7 +134,11 @@
     function _list(){
         var keys = _.keys( _configData );
         console.log('------------------------------------');
-        console.log( 'CONFIG: [' + _environment + ']' );
+        if( _environment ) {
+            console.log('CONFIG: [' + _environment + ']');
+        }else{
+            console.log('CONFIG:');
+        }
         for( var i = 0; i < keys.length; i++ ){
             var key = keys[i];
             console.log( '\t' + key + ': ' + require('util').inspect(_configData[key], true, 10) );
@@ -238,7 +230,7 @@
             if( typeof sourceData[nextComponent] === 'undefined' ) return undefined;
 
             if( typeof sourceData[nextComponent] !== 'object' ){
-                throw new Error("Attempt to get value with path through non object at path: " + configKeyPathComponents );
+                throw new Error("Attempt to get value with path through non object at sub-path: " + configKeyPathComponents );
             }
             return _getValueForDottedKeyPath( sourceData[nextComponent], configKeyPathComponents );
         }
