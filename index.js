@@ -30,6 +30,12 @@
     var _environment = false;               // by default no environment is selected
     var _whenEnvironments = false;
 
+    function _reset(){
+        _configData = {};
+        _options = {};
+        _environment = false;
+        _whenEnvironments = false;
+    }
 
     // ----------------------------
     // Each application of config data overwrites previous values for that key
@@ -254,5 +260,6 @@
     exports.get = _get;
     exports.set = _set;
     exports.list = _list;
+    exports.reset = _reset;
 
 })();
