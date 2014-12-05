@@ -1,10 +1,10 @@
-pony-config
-==============
+#pony-config
+---
 
 A very small config module, and an easy replacement for most of nconf
 
 ## Versatile Configuration
-
+---
 ### Configuration can be loaded from several sources
 - JSON files
 - Javascript Objects
@@ -40,7 +40,7 @@ config.set('verified', true);
 ```
 
 # Usage
-
+---
 ## Instantiation
 
 The config module is a singleton.  Instantiate it with
@@ -98,6 +98,7 @@ config.useEnvironmentVar( 'settings.server.port', 'PORT');
 ```
 
 ## Run-time Environment Configuation
+---
 Often it's necessary to load a different configuration for different run-time environments.
 
 - Determine the Environment
@@ -149,6 +150,7 @@ config.findEnvironment( { paths:['./env-file'], env: 'ENVIRONMENT', default:'pro
 ```
 
 ## Debugging
+---
 ####list()
 Outputs the current configuraion to console.log
 
