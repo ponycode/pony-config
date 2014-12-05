@@ -105,6 +105,7 @@
         if( _shouldApplyConfig( _whenEnvironments ) ){
             _loadAndApplyConfigFile( configFileName );
         }
+        _whenEnvironments = false;
         return this;
     }
 
@@ -115,6 +116,7 @@
         if( _shouldApplyConfig( _whenEnvironments ) && process.env[ envVariableName ] !== undefined ){
             _set( key, process.env[ envVariableName ] );
         }
+        _whenEnvironments = false;
         return this;
     }
 
@@ -125,6 +127,7 @@
         if( _shouldApplyConfig( _whenEnvironments ) ){
             _applyConfigData( configData );
         }
+        _whenEnvironments = false;
         return this;
     }
 
@@ -189,7 +192,7 @@
             configFileData = JSON.parse( configFileContents );
             if( _options.debug ) console.log('CONFIG: [' + _environment + '] Loaded config from file:', configFileName );
         } catch( error ){
-            if( error.code !== 'ENOENT' ){		// file doesn't exist, start a new one
+            if( error.code !== 'ENOENT' ){		// file doesn't exist, skip it
                 console.error('CONFIG: Error reading file:', configFileName, error );
             }
         }
