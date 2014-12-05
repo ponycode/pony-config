@@ -12,7 +12,7 @@ A very small config module, and an easy replacement for most of nconf
 
 ### Sources are merged predictably
 - Later values replace earlier values
-- New properties extend objects
+- New properties can extend objects
 
 This makes it easy to set defaults, then load common configuration, and finally override with specific values.
 
@@ -96,6 +96,26 @@ Variables from process.env can be accessed by name, and stored using the dot pat
 ```javascript
 config.useEnvironmentVar( 'settings.server.port', 'PORT');
 ```
+## Merging Configuration Sources
+---
+Each configuration source is loaded in the config root. When another node is added
+with an identical key path, it overwrites the previous node at that location. In this way you can use increasingly specific configurations.
+
+For example,
+```javascript
+config.useObject( { name : { first : 'Mike' , last : 'Moneybags' }}, age : 10 );
+config.useObject( { name : { nickname : 'Buckaroo' }, gender : male } );
+```
+
+Results in
+```javascript
+{
+    name : { nickname : 'Buckaroo' },   // replaced by name node in second source
+    age : 10,                           // from first source
+    gender : male                       // extended by second source
+}
+```
+
 
 ## Run-time Environment Configuation
 ---
