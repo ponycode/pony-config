@@ -4,7 +4,6 @@
 // License to distribute freely
 //
 // TODO
-// use config.when( env ).useFile()
 // lowercase all keys
 // add debug mode to trace key overwrites (probably requires rewriting 'extend')
 // ------------------------------------------------------
@@ -41,7 +40,7 @@
     // Each application of config data overwrites previous values for that key
     // ----------------------------
     function _applyConfigData( configData ){
-        _configData = _.extend( {}, _configData, configData );
+        _configData = _.defaults( configData, _configData );
     }
 
     // ----------------------------
