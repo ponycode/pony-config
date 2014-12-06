@@ -1,11 +1,13 @@
 var config = require('../index.js');
 
-//config.useCommandLineArgument('port', { options: ['-p, --port'], argument: true });
-//
-//config.list();
 
 var argv = require('../lib/argv');
 
 var argProcessor = new argv.Processor();
+    //[
+    //    { options : ['f', 'file'], expectsValue : true },
+    //    { options : 'c' },
+    //    { options : ['g', 'globe'], expectsValue: true }
+    //]);
 
-console.log( argProcessor.value( ['a'] ) );
+config.useCommandLineArgument( 'port', ['-p', '--port'], 80 );
