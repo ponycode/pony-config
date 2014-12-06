@@ -4,8 +4,10 @@
 // License to distribute freely
 //
 // TODO
-// lowercase all keys
-// add debug mode to trace key overwrites (probably requires rewriting 'extend')
+// log when set dot-path is extending objects
+// allow a key path for where a file or object is loaded
+// add debug mode to trace key overwrites (probably requires rewriting 'defaults')
+// load configuration from command line parameters
 // ------------------------------------------------------
 
 ( function(){
@@ -20,6 +22,7 @@
     // Local dependencies
     // ----------------------------
     var env = require('./lib/env.js');
+    var argv = require('./lib/argv.js');
 
     // ----------------------------
     // Configuration State, Module-Global by design
@@ -126,6 +129,17 @@
     }
 
     // ----------------------------
+    // Set configuration from the command line
+    // ----------------------------
+    function _useCommandLineArgument( configKey, argumentSpec ){
+        if( _shouldApplyConfig( _whenEnvironments ) ){
+            _processArgument( configKey, argumentSpec );
+        }
+        _whenEnvironments = false;
+        return this;
+    }
+
+    // ----------------------------
     // Set configuration using an object
     // ----------------------------
     function _useObject( configData ){
@@ -176,7 +190,6 @@
 
         var configValue = false;
         if( configKey.indexOf('.') > 0 ){
-            // Dotted path 'setting.setting.value' - dig into config to get the leaf value
             configValue = _getValueForDottedKeyPath( _configData, configKey.split('.') );
         }else{
             configValue = _configData[ configKey ];
@@ -245,6 +258,15 @@
     }
 
     // ----------------------------
+    // Helper to map command line parameters to config set's
+    // argSpec is as follows
+    // { options: [ '-f', '--file' ], argument: true, required: true }
+    // ----------------------------
+    function _processArgument( configKey, argSpec ){
+
+    }
+
+    // ----------------------------
     // Expose public functions
     // ----------------------------
     exports.setOptions = _setOptions;
@@ -256,6 +278,7 @@
     exports.useFile = _useFile;
     exports.useObject = _useObject;
     exports.useEnvironmentVar = _useEnvironmentVar;
+    exports.useCommandLineArgument = _useCommandLineArgument;
     exports.get = _get;
     exports.set = _set;
     exports.list = _list;

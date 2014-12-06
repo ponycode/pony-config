@@ -1,4 +1,11 @@
 var config = require('../index.js');
 
-config.useFile('./data/config_1.json');
+//config.useCommandLineArgument('port', { options: ['-p, --port'], argument: true });
+//
+//config.list();
 
+var argv = require('../lib/argv');
+
+var argProcessor = new argv.Processor();
+
+console.log( argProcessor.value( ['a'] ) );
