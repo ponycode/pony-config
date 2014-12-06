@@ -1,13 +1,16 @@
-var config = require('../index.js');
+//var config = require('../index.js');
 
 
 var argv = require('../lib/argv');
 
-var argProcessor = new argv.Processor();
-    //[
-    //    { options : ['f', 'file'], expectsValue : true },
-    //    { options : 'c' },
-    //    { options : ['g', 'globe'], expectsValue: true }
-    //]);
+var usage = [
+    { path : 'server.port', options : ['p', 'port'] },
+    { path : 'canSendMail', options : ['m', 'mail'] },
+    { path : 'verified', options : 'V' }
+];
 
-config.useCommandLineArgument( 'port', ['-p', '--port'], true );
+var interpreter = new argv.Interpreter( usage );
+
+console.log('server.port', interpreter.valueMap['server.port'] );
+console.log('canSendMail', interpreter.valueMap['canSendMail'] );
+console.log('verified', interpreter.valueMap['verified'] );

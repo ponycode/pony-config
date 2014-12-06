@@ -133,9 +133,15 @@
     // ----------------------------
     // Set configuration from the command line
     // ----------------------------
-    function _useCommandLineArgument( configKey, argument, expectsValue ){
+    function _useCommandLineArguments( usage ){
         if( _shouldApplyConfig( _whenEnvironments ) ){
-            var processor = new argv.Processor( { options: argument, expectsValue : expectsValue });
+            var processor = new argv.Processor( usage );
+
+            if(_.isArray( usage )){
+                for( var i=0; i < usage.length; i++ ){
+                    var value = processor.value( usage.o)
+                }
+            }
             var value = processor.value( argument );
             if( value !== undefined ){
                 set( configKey, value );
