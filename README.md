@@ -1,14 +1,15 @@
 #pony-config
----
 
 A very small config module, and an easy replacement for most of nconf
 
-## Versatile Configuration
 ---
+
+## Versatile Configuration
 ### Configuration can be loaded from several sources
 - JSON files
 - Javascript Objects
 - Environment Variables
+- Commandline Arguments
 
 ### Sources are merged predictably
 - Later values replace earlier values
@@ -38,9 +39,8 @@ var name = config.get('name');
 var street = config.get('address.street');
 config.set('verified', true);
 ```
-
-# Usage
 ---
+# Usage
 ## Instantiation
 
 The config module is a singleton.  Instantiate it with
@@ -89,15 +89,38 @@ Configuration files are JSON files, and their contents are loaded to the root co
 If the file doesn't exist it will be ignored.
 
 
-####useEnvironmentVar( *path*, *variable name* );
+####useEnvironmentVar( *path*, *variable name* )
 
 Variables from process.env can be accessed by name, and stored using the dot path.
 
 ```javascript
 config.useEnvironmentVar( 'settings.server.port', 'PORT');
 ```
-## Merging Configuration Sources
+
+####useCommandlineArgs( *usageRules* )
+
+Configuration values can be loaded from the command line. Arguments are parsed from process.argv by minimist.js, and value are saved in to dot-paths in the configuration. CLI *usageRules* are defined similar to many commandline processing tools.
+
+***usageRule*** = { paths: *dotPath*, options: *optionFlags* }  
+***usageRules*** = *usageRule* | [ *usageRule, ... ]
+
+For example, if the options are **-f filename -a**, where  
+-f|--file,  
+-a|--appendMode and  
+-s  
+are expected options, the following will load 'filename' at 'outputs.binaryFilename', and true at 'settings.appendMode'.  Any expected argument that is not found will be ignored.
+
+```javascript
+config.useCommandlineArgs( [
+    { path : 'outputs.binaryFilename', options : ['f','file'] },
+    { path : 'settings.appendMode', options : ['a','appendMode'] },
+    { path : 'settings.silentMode', options : 's' }
+]);
+```
+
 ---
+
+## Merging Configuration Sources
 Each configuration source is loaded in the config root. When another node is added
 with an identical key path, it overwrites the previous node at that location. In this way you can use increasingly specific configurations.
 
@@ -116,9 +139,10 @@ Results in
 }
 ```
 
+---
 
 ## Run-time Environment Configuation
----
+
 Often it's necessary to load a different configuration for different run-time environments.
 
 - Determine the Environment
@@ -168,9 +192,9 @@ Example
 ```javascript
 config.findEnvironment( { paths:['./env-file'], env: 'ENVIRONMENT', default:'prod');
 ```
+---
 
 ## Debugging
----
 ####list()
 Outputs the current configuraion to console.log
 

@@ -236,31 +236,27 @@ describe('useEnvironment', function(){
 
 describe('useCommandLine', function(){
     it('one command line argument with value', function(){
-        config.reset( { arguments : '-f filename -v version -ab' });
-        config.useCommandLineArguments( { path: 'root', options : 'v' } );
-        assert.equal( 'version', config.get('root'), 'should set version');
+        config.reset( { arguments : '-f filename -v version -ab' } );
+        config.useCommandLineArguments( { path: 'version', options : 'v' } );
+        assert.equal( 'version', config.get('version'), 'should be set');
     });
 
-    //it('command line arguments with values', function(){
-    //    config.reset();
-    //    config.useCommandLineArguments(
-    //        [
-    //            { path: 'version', options : 'v' },
-    //            { path: 'file', options : ['f', 'file'] },
-    //            { path: 'boolean.a', options : 'a' },
-    //            { path: 'boolean.a', options : 'b' },
-    //            { path: 'boolean.a', options : 'c' },
-    //            { path: 'boolean.a', options : 'd' },
-    //            { path: 'boolean.a', options : 'e' }
-    //        ]);
-    //    assert.equal( 'version', config.get('version'), 'should set version');
-    //    assert.equal( 'file', config.get('file'), 'should set file');
-    //    assert.equal( true, config.get('boolean.a'), 'should be set');
-    //    assert.equal( true, config.get('boolean.b'), 'should be set');
-    //    assert.equal( true, config.get('boolean.c'), 'should be set');
-    //    assert.equal( true, config.get('boolean.d'), 'should be set');
-    //    assert.isUndefined( true, config.get('boolean.e'), 'should not be set');
-    //});
+    it('command line arguments with values', function(){
+        config.reset( { arguments : '-f filename -v version -ab' } );
+        config.useCommandLineArguments(
+            [
+                { path: 'version', options : 'v' },
+                { path: 'filename', options : ['f', 'file'] },
+                { path: 'boolean.a', options : 'a' },
+                { path: 'boolean.b', options : 'b' },
+                { path: 'boolean.c', options : 'c' }
+            ]);
+        assert.equal( 'version', config.get('version'), 'should set version');
+        assert.equal( 'filename', config.get('filename'), 'should set file');
+        assert.equal( true, config.get('boolean.a'), 'should be set');
+        assert.equal( true, config.get('boolean.b'), 'should be set');
+        assert.equal( undefined, config.get('boolean.c'), 'should be unset');
+    });
 
 });
 
