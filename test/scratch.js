@@ -10,4 +10,4 @@ var argProcessor = new argv.Processor();
     //    { options : ['g', 'globe'], expectsValue: true }
     //]);
 
-config.useCommandLineArgument( 'port', ['-p', '--port'], 80 );
+config.useCommandLineArgument( 'port', ['-p', '--port'], true );

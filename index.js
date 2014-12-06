@@ -31,12 +31,14 @@
     var _options = {};
     var _environment = false;               // by default no environment is selected
     var _whenEnvironments = false;
+    var _commandlineProcessor = new argv.Processor();
 
     function _reset(){
         _configData = {};
         _options = {};
         _environment = false;
         _whenEnvironments = false;
+        _commandlineProcessor = new argv.Processor();
     }
 
     // ----------------------------
@@ -131,9 +133,13 @@
     // ----------------------------
     // Set configuration from the command line
     // ----------------------------
-    function _useCommandLineArgument( configKey, argumentSpec ){
+    function _useCommandLineArgument( configKey, argument, expectsValue ){
         if( _shouldApplyConfig( _whenEnvironments ) ){
-            _processArgument( configKey, argumentSpec );
+            var processor = new argv.Processor( { options: argument, expectsValue : expectsValue });
+            var value = processor.value( argument );
+            if( value !== undefined ){
+                set( configKey, value );
+            }
         }
         _whenEnvironments = false;
         return this;
@@ -263,6 +269,7 @@
     // { options: [ '-f', '--file' ], argument: true, required: true }
     // ----------------------------
     function _processArgument( configKey, argSpec ){
+        var value = _commandlineProcessor.value( argSpec );
 
     }
 
