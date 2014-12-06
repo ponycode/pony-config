@@ -31,14 +31,17 @@
     var _options = {};
     var _environment = false;               // by default no environment is selected
     var _whenEnvironments = false;
-    var _commandlineProcessor = new argv.Processor();
+    var _parsedArgs = [];
 
-    function _reset(){
+    function _reset( options ){
         _configData = {};
         _options = {};
         _environment = false;
         _whenEnvironments = false;
-        _commandlineProcessor = new argv.Processor();
+        _parsedArgs = [];
+        if( options && options.arguments ){
+            _options._debugOverrideCommandlineArgs = options.arguments;
+        }
     }
 
     // ----------------------------
@@ -133,18 +136,30 @@
     // ----------------------------
     // Set configuration from the command line
     // ----------------------------
-    function _useCommandLineArguments( usage ){
+    function _useCommandLineArguments( usageRules ){
         if( _shouldApplyConfig( _whenEnvironments ) ){
-            var processor = new argv.Processor( usage );
 
-            if(_.isArray( usage )){
-                for( var i=0; i < usage.length; i++ ){
-                    var value = processor.value( usage.o)
+            var options = {};
+            if( _options._debugOverrideCommandlineArgs ){
+                options = { "arguments" : _options._debugOverrideCommandlineArgs };
+            }
+
+            var interpreter = new argv.Interpreter( usageRules, options );
+            _parsedArgs = interpreter.args;
+
+            function _setValueForPath( path ){
+                var value = interpreter.values[ path ];
+                if( value ){
+                    _set( path, value );
                 }
             }
-            var value = processor.value( argument );
-            if( value !== undefined ){
-                set( configKey, value );
+
+            if(_.isArray( usageRules )){
+                for( var i=0; i < usageRules.length; i++ ){
+                    _setValueForPath( usageRules[i].path );
+                }
+            } else if(_.isObject( usageRules )){
+                _setValueForPath( usageRules.path );
             }
         }
         _whenEnvironments = false;
@@ -291,10 +306,11 @@
     exports.useFile = _useFile;
     exports.useObject = _useObject;
     exports.useEnvironmentVar = _useEnvironmentVar;
-    exports.useCommandLineArgument = _useCommandLineArgument;
+    exports.useCommandLineArguments = _useCommandLineArguments;
     exports.get = _get;
     exports.set = _set;
     exports.list = _list;
     exports.reset = _reset;
+    exports.parsedArgs = _parsedArgs;
 
 })();
