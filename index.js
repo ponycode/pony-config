@@ -23,19 +23,19 @@
     // ----------------------------
     var env = require('./lib/env.js');
     var argv = require('./lib/argv.js');
-    var obj = require('./lib/obj.js');
+    var Config = require('./lib/Config.js');
 
     // ----------------------------
     // Configuration State, Module-Global by design
     // ----------------------------
-    var _configData = {};
+    var _config = new Config();
     var _options = {};
     var _environment = false;               // by default no environment is selected
     var _whenEnvironments = false;
     var _parsedArgs = [];
 
     function _reset( options ){
-        _configData = {};
+        _config = new Config();
         _options = {};
         _environment = false;
         _whenEnvironments = false;
@@ -45,12 +45,6 @@
         }
     }
 
-    // ----------------------------
-    // Each application of config data overwrites previous values for that key
-    // ----------------------------
-    function _applyConfigData( configData ){
-        _configData = obj.merge( _configData, configData );
-    }
 
     // ----------------------------
     // Options:
@@ -128,7 +122,7 @@
     // ----------------------------
     function _useEnvironmentVar( key, envVariableName ){
         if( _shouldApplyConfig( _whenEnvironments ) && process.env[ envVariableName ] !== undefined ){
-            _set( key, process.env[ envVariableName ] );
+            _config.set( key, process.env[ envVariableName ]);
         }
         _whenEnvironments = false;
         return this;
@@ -148,19 +142,19 @@
             var interpreter = new argv.Interpreter( usageRules, options );
             _parsedArgs = interpreter.args;
 
-            function _setValueForPath( path ){
+            function _applyArgumentValueForPath( path ){
                 var value = interpreter.values[ path ];
                 if( value ){
-                    _set( path, value );
+                    _config.set( path, value );
                 }
             }
 
             if(_.isArray( usageRules )){
                 for( var i=0; i < usageRules.length; i++ ){
-                    _setValueForPath( usageRules[i].path );
+                    _applyArgumentValueForPath( usageRules[i].path );
                 }
             } else if(_.isObject( usageRules )){
-                _setValueForPath( usageRules.path );
+                _applyArgumentValueForPath( usageRules.path );
             }
         }
         _whenEnvironments = false;
@@ -172,7 +166,7 @@
     // ----------------------------
     function _useObject( configData ){
         if( _shouldApplyConfig( _whenEnvironments ) ){
-            _applyConfigData( configData );
+            _config.merge( configData );
         }
         _whenEnvironments = false;
         return this;
@@ -182,17 +176,13 @@
     // Log the current configuration
     // ----------------------------
     function _list(){
-        var keys = _.keys( _configData );
         console.log('------------------------------------');
         if( _environment ) {
             console.log('CONFIG: [' + _environment + ']');
         }else{
             console.log('CONFIG:');
         }
-        for( var i = 0; i < keys.length; i++ ){
-            var key = keys[i];
-            console.log( '\t' + key + ': ' + require('util').inspect(_configData[key], true, 10) );
-        }
+        _config.list();
         console.log('------------------------------------');
         return this;
     }
@@ -200,17 +190,16 @@
     // ----------------------------
     // Set configuration using an dot-path key, eg. (tree.height, 25)
     // ----------------------------
-    function _set( configKey, configValue ){
-        obj.set( _configData, configKey, configValue );
+    function _set( configKeyPath, configValue ){
+        _config.set( configKeyPath, configValue );
         return this;
     }
 
     // ----------------------------
     // Get config with a dot-path key, e.g., get( tree.height )
     // ----------------------------
-    function _get( configKey, defaultValue ){
-        var configValue = obj.get( _configData, configKey );
-        return ( configValue === undefined ) ?  defaultValue : configValue;
+    function _get( configKeyPath, defaultValue ){
+        return _config.get( configKeyPath, defaultValue );
     }
 
 
@@ -231,7 +220,7 @@
         }
 
         if( configFileData ){
-            _applyConfigData( configFileData );
+            _config.merge( configFileData );
         }
     }
 
