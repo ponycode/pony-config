@@ -166,7 +166,7 @@
     // ----------------------------
     function _useObject( configData ){
         if( _shouldApplyConfig( _whenEnvironments ) ){
-            _config.merge( configData );
+            _config.set( '.', configData );
         }
         _whenEnvironments = false;
         return this;
@@ -220,7 +220,7 @@
         }
 
         if( configFileData ){
-            _config.merge( configFileData );
+            _config.set( '.', configFileData );
         }
     }
 
