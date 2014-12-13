@@ -23,6 +23,7 @@
     // ----------------------------
     var env = require('./lib/env.js');
     var argv = require('./lib/argv.js');
+    var objectMerge = require('./lib/object-merge');
 
     // ----------------------------
     // Configuration State, Module-Global by design
@@ -48,7 +49,7 @@
     // Each application of config data overwrites previous values for that key
     // ----------------------------
     function _applyConfigData( configData ){
-        _configData = _.defaults( configData, _configData );
+        _configData = objectMerge.merge( _configData, configData );
     }
 
     // ----------------------------
@@ -253,7 +254,7 @@
     // ----------------------------
     function _setValueForDottedKeyPath( targetData, configValue, configKeyPathComponents ){
         if( configKeyPathComponents.length === 1){
-            targetData[ configKeyPathComponents ] = configValue;
+            targetData[ configKeyPathComponents ] = objectMerge.merge( targetData[ configKeyPathComponents ], configValue );
         } else {
             var nextComponent = configKeyPathComponents.shift();
             if( typeof targetData[nextComponent] === 'undefined' ){

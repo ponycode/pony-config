@@ -100,14 +100,15 @@ describe('useObject', function(){
         assert.equal( 'r2_s2_value_1', config.get('root_node_2.sub_node_2') );
     });
 
-    it('use file, two files containing an object, merged', function(){
+    it('use file, two files containing an object, replaced or merged', function(){
         config.useFile('data/config_1.json');
         config.useFile('data/config_2.json');
         assert.equal( 'r1_value_2', config.get('root_node_1'), 'root node should be replaced' );
-        //assert.equal( 'r2_s1_value_1', config.get('root_node_2.sub_node_1'), 'root node 2 sub_node1 should be original' );
         assert.equal( 'r2_s2_value_2', config.get('root_node_2.sub_node_2'), 'root node 2 sub_value2 should be replaced' );
         assert.equal( 'r3_value_1', config.get('root_node_3'), 'root node 3 should be original' );
         assert.equal( 'r4_value_2', config.get('root_node_4'), 'root node 4 should be new' );
+
+        assert.equal('r2_s1_value_1', config.get('root_node_2.sub_node_1'), 'root node 2 sub_node1 should be original');
     });
 });
 
