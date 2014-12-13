@@ -23,7 +23,7 @@
     // ----------------------------
     var env = require('./lib/env.js');
     var argv = require('./lib/argv.js');
-    var objectMerge = require('./lib/object-merge');
+    var obj = require('./lib/obj.js');
 
     // ----------------------------
     // Configuration State, Module-Global by design
@@ -49,7 +49,7 @@
     // Each application of config data overwrites previous values for that key
     // ----------------------------
     function _applyConfigData( configData ){
-        _configData = objectMerge.merge( _configData, configData );
+        _configData = obj.merge( _configData, configData );
     }
 
     // ----------------------------
@@ -201,11 +201,7 @@
     // Set configuration using an dot-path key, eg. (tree.height, 25)
     // ----------------------------
     function _set( configKey, configValue ){
-        if( configKey.indexOf('.') > 0 ){
-            _setValueForDottedKeyPath( _configData, configValue, configKey.split('.') );
-        }else{
-            _configData[ configKey ] = configValue;
-        }
+        obj.set( _configData, configKey, configValue );
         return this;
     }
 
@@ -213,16 +209,7 @@
     // Get config with a dot-path key, e.g., get( tree.height )
     // ----------------------------
     function _get( configKey, defaultValue ){
-        if( !_.isString(configKey) ) return defaultValue;
-        if( _configData === false ) return defaultValue;
-
-        var configValue = false;
-        if( configKey.indexOf('.') > 0 ){
-            configValue = _getValueForDottedKeyPath( _configData, configKey.split('.') );
-        }else{
-            configValue = _configData[ configKey ];
-        }
-
+        var configValue = obj.get( _configData, configKey );
         return ( configValue === undefined ) ?  defaultValue : configValue;
     }
 
@@ -246,53 +233,6 @@
         if( configFileData ){
             _applyConfigData( configFileData );
         }
-    }
-
-
-    // ----------------------------
-    // Helper to set config with a dot-path key
-    // ----------------------------
-    function _setValueForDottedKeyPath( targetData, configValue, configKeyPathComponents ){
-        if( configKeyPathComponents.length === 1){
-            targetData[ configKeyPathComponents ] = objectMerge.merge( targetData[ configKeyPathComponents ], configValue );
-        } else {
-            var nextComponent = configKeyPathComponents.shift();
-            if( typeof targetData[nextComponent] === 'undefined' ){
-                targetData[nextComponent] = {};
-            } else if( typeof targetData[nextComponent] !== 'object' ){
-                throw new Error("Attempt to set value with path through non object at path: " + configKeyPathComponents );
-            }
-
-            _setValueForDottedKeyPath( targetData[nextComponent], configValue, configKeyPathComponents );
-        }
-    }
-
-    // ----------------------------
-    // Helper to get config with a dot-path key
-    // ----------------------------
-    function _getValueForDottedKeyPath( sourceData, configKeyPathComponents ){
-        if( configKeyPathComponents.length === 1 ){
-            return sourceData[configKeyPathComponents[0]];
-        }else{
-            var nextComponent = configKeyPathComponents.shift();
-
-            if( typeof sourceData[nextComponent] === 'undefined' ) return undefined;
-
-            if( typeof sourceData[nextComponent] !== 'object' ){
-                throw new Error("Attempt to get value with path through non object at sub-path: " + configKeyPathComponents );
-            }
-            return _getValueForDottedKeyPath( sourceData[nextComponent], configKeyPathComponents );
-        }
-    }
-
-    // ----------------------------
-    // Helper to map command line parameters to config set's
-    // argSpec is as follows
-    // { options: [ '-f', '--file' ], argument: true, required: true }
-    // ----------------------------
-    function _processArgument( configKey, argSpec ){
-        var value = _commandlineProcessor.value( argSpec );
-
     }
 
     // ----------------------------
