@@ -15,15 +15,15 @@
     // ----------------------------
     // External dependencies
     // ----------------------------
-    var _ = require('underscore');
     var fs = require('fs');
 
     // ----------------------------
     // Local dependencies
     // ----------------------------
-    var env = require('./lib/env.js');
-    var argv = require('./lib/argv.js');
-    var Config = require('./lib/Config.js');
+    var env = require('./lib/env');
+    var argv = require('./lib/argv');
+    var Config = require('./lib/Config');
+    var arrayWrap = require('./lib/array-wrap');
 
     // ----------------------------
     // Configuration State, Module-Global by design
@@ -78,7 +78,7 @@
 
         if( environments === undefined || environments === false ) return true; // unspecified environments are always added
 
-        if( _.isString( environments )) environments = [ environments ];
+        environments = arrayWrap.wrap( environments );
 
         for( var i = 0; i < environments.length; i++){
             var env = environments[i];
@@ -105,6 +105,13 @@
         _whenEnvironments = false;
         return this;
     }
+
+
+    // ----------------------------
+    // USE Clauses - Configuration sources
+    // ----------------------------
+
+
 
     // ----------------------------
     // Set configuration from a file
@@ -142,19 +149,13 @@
             var interpreter = new argv.Interpreter( usageRules, options );
             _parsedArgs = interpreter.args;
 
-            function _applyArgumentValueForPath( path ){
+            usageRules = arrayWrap.wrap( usageRules );
+            for( var i=0; i < usageRules.length; i++ ){
+                var path = usageRules[i].path;
                 var value = interpreter.values[ path ];
                 if( value ){
                     _config.set( path, value );
                 }
-            }
-
-            if(_.isArray( usageRules )){
-                for( var i=0; i < usageRules.length; i++ ){
-                    _applyArgumentValueForPath( usageRules[i].path );
-                }
-            } else if(_.isObject( usageRules )){
-                _applyArgumentValueForPath( usageRules.path );
             }
         }
         _whenEnvironments = false;
@@ -223,6 +224,7 @@
             _config.set( '.', configFileData );
         }
     }
+
 
     // ----------------------------
     // Expose public functions
