@@ -154,7 +154,7 @@
                 var path = usageRules[i].path;
                 var value = interpreter.values[ path ];
                 if( value ){
-                    _config.set( path, value );
+                    _config.set( path, value, 'USE-COMMAND-LINE:' + usageRules[i].options );
                 }
             }
         }
@@ -167,7 +167,7 @@
     // ----------------------------
     function _useObject( configData ){
         if( _shouldApplyConfig( _whenEnvironments ) ){
-            _config.set( '.', configData );
+            _config.set( '.', configData, 'USE-OBJECT' );
         }
         _whenEnvironments = false;
         return this;
@@ -192,7 +192,7 @@
     // Set configuration using an dot-path key, eg. (tree.height, 25)
     // ----------------------------
     function _set( configKeyPath, configValue ){
-        _config.set( configKeyPath, configValue );
+        _config.set( configKeyPath, configValue, 'SET' );
         return this;
     }
 
@@ -221,7 +221,7 @@
         }
 
         if( configFileData ){
-            _config.set( '.', configFileData );
+            _config.set( '.', configFileData, 'USE-FILE:' + configFileName );
         }
     }
 
