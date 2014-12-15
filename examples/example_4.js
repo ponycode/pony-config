@@ -10,4 +10,6 @@ config.when('dev').useCommandLineArguments({ path:'address.zip', options:'zip' }
 
 config.set('address.zip-state', config.get('address.zip')+'-'+config.get('address.state'));
 
+config.get('address.zip');
+
 config.list();
