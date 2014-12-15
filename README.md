@@ -44,10 +44,9 @@ var street = config.get('address.street');
 config.set('verified', true);
 ```
 ---
-# Usage
-## Instantiation
+# Getting Started
 
-The config module is a singleton.  Instantiate it with
+The config module is a singleton.  Reference it with
 ```javascript
 var config = require('pony-config');
 ```
@@ -105,7 +104,7 @@ var port = config.get( "settings,server.port" );
 
 ####useCommandlineArgs( *usageRule* | [*usageRules*] )
 
-Configuration values can be loaded from the command line. Arguments are parsed from process.argv by minimist.js, and value are saved at dot-paths in the configuration. CLI *usageRules* are defined similarly to many commandline processing tools.
+Configuration values can be loaded from the command line. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and valued are added at dot-paths in the configuration. CLI *usageRules* are defined similarly to many commandline processing tools.
 
 ***usageRule*** = { paths: *dotPath*, options: *optionFlags* | [*optionFlags*] }  
 
@@ -159,7 +158,7 @@ Often it's necessary to load a slightly different configuration for each of your
 Configuration sources that aren't needed for the current environment are ignored, so you can declare all of your configuration sources in your main script file and let **pony-config** apply the right ones at run-time.
 
 ### Determing the Run-time Environment
-**pony-config** can help you determine the runtime configuration by searching for two kinds of environment determinants: files and environment variables.  File determinants are provided for platforms that lack configurable environment variables.
+**pony-config** can help you determine the run-time environment by searching for two kinds of environment determinants: files and environment variables.  File determinants are provided for platforms that lack configurable environment variables.
 
 File Determinants are text files containing a string that will be the key.  For example, a file named ".env-file' may contain the string 'prod'.
 
