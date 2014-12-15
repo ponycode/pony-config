@@ -151,7 +151,7 @@
 
             usageRules = arrayWrap.wrap( usageRules );
             for( var i=0; i < usageRules.length; i++ ){
-                var path = usageRules[i].path;
+                var path = usageRules[i].path.replace(/^-*/,'');        // strip any number of leading dashes
                 var value = interpreter.values[ path ];
                 if( value ){
                     _config.set( path, value, 'USE-COMMAND-LINE:' + usageRules[i].options );
