@@ -126,7 +126,7 @@ config.useCommandlineArgs( [
 When the configuration is set, you can lock it against further changes.  Pass *true* to have change attempts throw an exception, or set { 'exceptionOnLocked' : true } in your config options.
 
 ```javascript
-config.lock( *true* | *false* );
+config.lock( true | false );
 ```
 
 ---
@@ -212,7 +212,7 @@ config.useEnvironment('prod');
 ```
 
 ####getEnvironment()
-Returns for the current environment key.  Returns ```false``` is no environment key has been set.
+Returns the current environment key.  Returns ```false``` is no environment key has been set.
 
 ---
 
@@ -238,7 +238,7 @@ Turns on additional logging. Useful for tracing the loading of configuration fil
 **pony-config** uses [minimist](https://www.npmjs.com/package/minimist) for command line argument parsing because it does exactly one thing and does it well. 
 
 ###Coming Soon
-The next version of **pony-config** will use [fs-coalesce](https://www.npmjs.com/package/fs-coalesce) to file paths. This module (also by [ponycode](https://www.npmjs.com/~ponycode)) extends the file path syntax to include '~', and automatically matches on the first extant file in an array of paths.
+The next version of **pony-config** will use [fs-coalesce](https://www.npmjs.com/package/fs-coalesce) to search file paths. This module (also by [ponycode](https://www.npmjs.com/~ponycode)) extends the file path syntax to include '~', and automatically matches on the first extant file in an array of paths.
 
 ###License
 Copyright (c) 2014 PonyCode Corporation Licensed under the MIT license.
