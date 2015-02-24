@@ -61,13 +61,6 @@
 	}
 	
     // ----------------------------
-    // Each application of config data overwrites previous values for that key
-    // ----------------------------
-    function _applyConfigData( configData ){
-        _configData = _.defaults( configData, _configData );
-    }
-
-    // ----------------------------
     // Options:
     //  debug - logs configuration changes
     // ----------------------------
@@ -201,10 +194,15 @@
     // ----------------------------
     // Log the current configuration
     // ----------------------------
-    function _list(){
-        console.log('------------------------------------');
+    function _list( options ){
+	    var noColor = ( (options && options.noColor) || _options.noColor );
+	    var chalk = require('chalk');
+		
+	    chalk.enabled = ! noColor;
+	    
+	    console.log('------------------------------------');
         if( _environment ) {
-            console.log('CONFIG: [' + _environment + ']');
+            console.log('CONFIG: [' + chalk.green( _environment ) + ']');
         }else{
             console.log('CONFIG:');
         }
