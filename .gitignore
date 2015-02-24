@@ -2,3 +2,12 @@ node_modules
 workspace.xml
 .idea
 projectFilesBackup
+npm-debug.log
+index.js.BACKUP.5924.js
+index.js.BASE.5924.js
+index.js.LOCAL.5924.js
+index.js.REMOTE.5924.js
+index.js.BACKUP.6404.js
+index.js.BASE.6404.js
+index.js.LOCAL.6404.js
+index.js.REMOTE.6404.js

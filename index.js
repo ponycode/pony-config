@@ -15,19 +15,20 @@
     // ----------------------------
     // External dependencies
     // ----------------------------
-    var _ = require('underscore');
     var fs = require('fs');
 
     // ----------------------------
     // Local dependencies
     // ----------------------------
-    var env = require('./lib/env.js');
-    var argv = require('./lib/argv.js');
+    var env = require('./lib/env');
+    var argv = require('./lib/argv');
+    var Config = require('./lib/Config');
+    var arrayWrap = require('./lib/array-wrap');
 
     // ----------------------------
     // Configuration State, Module-Global by design
     // ----------------------------
-    var _configData = {};
+    var _config = new Config();
     var _options = {};
     var _environment = false;               // by default no environment is selected
     var _whenEnvironments = false;
@@ -35,7 +36,7 @@
 	var _locked = false;
 
     function _reset( options ){
-        _configData = {};
+        _config = new Config();
         _options = {};
         _environment = false;
         _whenEnvironments = false;
@@ -102,7 +103,7 @@
 	    }
         if( environments === undefined || environments === false ) return true; // unspecified environments are always added
 
-        if( _.isString( environments )) environments = [ environments ];
+        environments = arrayWrap.wrap( environments );
 
         for( var i = 0; i < environments.length; i++){
             var env = environments[i];
@@ -130,6 +131,13 @@
         return this;
     }
 
+
+    // ----------------------------
+    // USE Clauses - Configuration sources
+    // ----------------------------
+
+
+
     // ----------------------------
     // Set configuration from a file
     // ----------------------------
@@ -146,7 +154,7 @@
     // ----------------------------
     function _useEnvironmentVar( key, envVariableName ){
 	    if( _shouldApplyConfig( _whenEnvironments ) && process.env[ envVariableName ] !== undefined ){
-            _set( key, process.env[ envVariableName ] );
+            _config.set( key, process.env[ envVariableName ]);
         }
         _whenEnvironments = false;
         return this;
@@ -166,19 +174,13 @@
             var interpreter = new argv.Interpreter( usageRules, options );
             _parsedArgs = interpreter.args;
 
-            function _setValueForPath( path ){
+            usageRules = arrayWrap.wrap( usageRules );
+            for( var i=0; i < usageRules.length; i++ ){
+                var path = usageRules[i].path.replace(/^-*/,'');        // strip any number of leading dashes
                 var value = interpreter.values[ path ];
                 if( value ){
-                    _set( path, value );
+                    _config.set( path, value, 'USE-COMMAND-LINE:' + usageRules[i].options );
                 }
-            }
-
-            if(_.isArray( usageRules )){
-                for( var i=0; i < usageRules.length; i++ ){
-                    _setValueForPath( usageRules[i].path );
-                }
-            } else if(_.isObject( usageRules )){
-                _setValueForPath( usageRules.path );
             }
         }
         _whenEnvironments = false;
@@ -190,7 +192,7 @@
     // ----------------------------
     function _useObject( configData ){
 	    if( _shouldApplyConfig( _whenEnvironments ) ){
-            _applyConfigData( configData );
+            _config.set( '.', configData, 'USE-OBJECT' );
         }
         _whenEnvironments = false;
         return this;
@@ -200,17 +202,13 @@
     // Log the current configuration
     // ----------------------------
     function _list(){
-        var keys = _.keys( _configData );
         console.log('------------------------------------');
         if( _environment ) {
             console.log('CONFIG: [' + _environment + ']');
         }else{
             console.log('CONFIG:');
         }
-        for( var i = 0; i < keys.length; i++ ){
-            var key = keys[i];
-            console.log( '\t' + key + ': ' + require('util').inspect(_configData[key], true, 10) );
-        }
+        _config.list();
         console.log('------------------------------------');
         return this;
     }
@@ -218,35 +216,16 @@
     // ----------------------------
     // Set configuration using an dot-path key, eg. (tree.height, 25)
     // ----------------------------
-    function _set( configKey, configValue ){
-	    if( _locked ){
-		    if( _options.exceptionOnLocked ) throw Error( 'CONFIG: Cannot modify config after locking' );
-		    else console.error('CONFIG: Cannot modify config after locking' );
-		    return;
-	    }
-	    if( configKey.indexOf('.') > 0 ){
-            _setValueForDottedKeyPath( _configData, configValue, configKey.split('.') );
-        }else{
-            _configData[ configKey ] = configValue;
-        }
+    function _set( configKeyPath, configValue ){
+        _config.set( configKeyPath, configValue, 'SET' );
         return this;
     }
 
     // ----------------------------
     // Get config with a dot-path key, e.g., get( tree.height )
     // ----------------------------
-    function _get( configKey, defaultValue ){
-        if( !_.isString(configKey) ) return defaultValue;
-        if( _configData === false ) return defaultValue;
-
-        var configValue = false;
-        if( configKey.indexOf('.') > 0 ){
-            configValue = _getValueForDottedKeyPath( _configData, configKey.split('.') );
-        }else{
-            configValue = _configData[ configKey ];
-        }
-
-        return ( configValue === undefined ) ?  defaultValue : configValue;
+    function _get( configKeyPath, defaultValue ){
+        return _config.get( configKeyPath, defaultValue );
     }
 
 
@@ -267,56 +246,10 @@
         }
 
         if( configFileData ){
-            _applyConfigData( configFileData );
+            _config.set( '.', configFileData, 'USE-FILE:' + configFileName );
         }
     }
 
-
-    // ----------------------------
-    // Helper to set config with a dot-path key
-    // ----------------------------
-    function _setValueForDottedKeyPath( targetData, configValue, configKeyPathComponents ){
-        if( configKeyPathComponents.length === 1){
-            targetData[ configKeyPathComponents ] = configValue;
-        } else {
-            var nextComponent = configKeyPathComponents.shift();
-            if( typeof targetData[nextComponent] === 'undefined' ){
-                targetData[nextComponent] = {};
-            } else if( typeof targetData[nextComponent] !== 'object' ){
-                throw new Error("Attempt to set value with path through non object at path: " + configKeyPathComponents );
-            }
-
-            _setValueForDottedKeyPath( targetData[nextComponent], configValue, configKeyPathComponents );
-        }
-    }
-
-    // ----------------------------
-    // Helper to get config with a dot-path key
-    // ----------------------------
-    function _getValueForDottedKeyPath( sourceData, configKeyPathComponents ){
-        if( configKeyPathComponents.length === 1 ){
-            return sourceData[configKeyPathComponents[0]];
-        }else{
-            var nextComponent = configKeyPathComponents.shift();
-
-            if( typeof sourceData[nextComponent] === 'undefined' ) return undefined;
-
-            if( typeof sourceData[nextComponent] !== 'object' ){
-                throw new Error("Attempt to get value with path through non object at sub-path: " + configKeyPathComponents );
-            }
-            return _getValueForDottedKeyPath( sourceData[nextComponent], configKeyPathComponents );
-        }
-    }
-
-    // ----------------------------
-    // Helper to map command line parameters to config set's
-    // argSpec is as follows
-    // { options: [ '-f', '--file' ], argument: true, required: true }
-    // ----------------------------
-    function _processArgument( configKey, argSpec ){
-        var value = _commandlineProcessor.value( argSpec );
-
-    }
 
     // ----------------------------
     // Expose public functions
