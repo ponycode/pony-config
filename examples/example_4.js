@@ -7,3 +7,6 @@ config.useObject({ 'organization': 'PonyCode' });
 config.when(['dev']).useFile( 'example-dev-config.json' );
 config.when(['prod','stage']).useFile( 'example-prod-config.json' );
 config.list();
+config.lock( true );
+
+config.set("test",false);

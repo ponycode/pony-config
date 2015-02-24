@@ -1,6 +1,6 @@
 #pony-config
 
-A very small config module, and an easy replacement for most of nconf
+A very small config module
 
 ---
 
@@ -170,6 +170,13 @@ config.when(['prod','stage']).useObject({ database : 'mongodb' });
 
 ####always()
 Always load the configuration source.  This is the default, but it is sometimes helpful to be explicit. 
+
+## Locking Config Against Changes
+When the configuration is set, you can lock it against further changes.  Pass *true* to have change attempts throw an exception, or set { 'exceptionOnLocked' : true } in your config options.
+
+```javascript
+config.lock( *true* | *false* );
+```
 
 ## Determing the Run-time Environment
 **pony-config** can help you determine the runtime configuration by searching for two kinds of environment determinants: files and environment variables.  File determinants are provided for platforms that lack configurable environment variables.

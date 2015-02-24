@@ -32,6 +32,7 @@
     var _environment = false;               // by default no environment is selected
     var _whenEnvironments = false;
     var _parsedArgs = [];
+	var _locked = false;
 
     function _reset( options ){
         _configData = {};
@@ -39,11 +40,25 @@
         _environment = false;
         _whenEnvironments = false;
         _parsedArgs = [];
+	    _locked = false;
         if( options && options.arguments ){
             _options._debugOverrideCommandlineArgs = options.arguments;
         }
     }
 
+	// ----------------------------
+	// lock config against changes
+	// ----------------------------
+	function _lock( exceptionOnLocked ){
+		_locked = true;
+		if( exceptionOnLocked !== undefined ){
+			_options.exceptionOnLocked = exceptionOnLocked;
+		}
+		if( _options.debug ){
+			console.log("CONFIG: Locked");
+		}
+	}
+	
     // ----------------------------
     // Each application of config data overwrites previous values for that key
     // ----------------------------
@@ -80,7 +95,11 @@
     }
 
     function _shouldApplyConfig( environments ){
-
+	    if( _locked ){
+		    if( _options.exceptionOnLocked ) throw Error( 'CONFIG: Cannot modify config after locking' );
+		    else console.error('CONFIG: Cannot modify config after locking' );
+		    return false;
+	    }
         if( environments === undefined || environments === false ) return true; // unspecified environments are always added
 
         if( _.isString( environments )) environments = [ environments ];
@@ -126,7 +145,7 @@
     // Set configuration from an OS environment variable
     // ----------------------------
     function _useEnvironmentVar( key, envVariableName ){
-        if( _shouldApplyConfig( _whenEnvironments ) && process.env[ envVariableName ] !== undefined ){
+	    if( _shouldApplyConfig( _whenEnvironments ) && process.env[ envVariableName ] !== undefined ){
             _set( key, process.env[ envVariableName ] );
         }
         _whenEnvironments = false;
@@ -137,7 +156,7 @@
     // Set configuration from the command line
     // ----------------------------
     function _useCommandLineArguments( usageRules ){
-        if( _shouldApplyConfig( _whenEnvironments ) ){
+	    if( _shouldApplyConfig( _whenEnvironments ) ){
 
             var options = {};
             if( _options._debugOverrideCommandlineArgs ){
@@ -170,7 +189,7 @@
     // Set configuration using an object
     // ----------------------------
     function _useObject( configData ){
-        if( _shouldApplyConfig( _whenEnvironments ) ){
+	    if( _shouldApplyConfig( _whenEnvironments ) ){
             _applyConfigData( configData );
         }
         _whenEnvironments = false;
@@ -200,7 +219,12 @@
     // Set configuration using an dot-path key, eg. (tree.height, 25)
     // ----------------------------
     function _set( configKey, configValue ){
-        if( configKey.indexOf('.') > 0 ){
+	    if( _locked ){
+		    if( _options.exceptionOnLocked ) throw Error( 'CONFIG: Cannot modify config after locking' );
+		    else console.error('CONFIG: Cannot modify config after locking' );
+		    return;
+	    }
+	    if( configKey.indexOf('.') > 0 ){
             _setValueForDottedKeyPath( _configData, configValue, configKey.split('.') );
         }else{
             _configData[ configKey ] = configValue;
@@ -311,6 +335,7 @@
     exports.set = _set;
     exports.list = _list;
     exports.reset = _reset;
+	exports.lock = _lock;
     exports.parsedArgs = _parsedArgs;
 
 })();
