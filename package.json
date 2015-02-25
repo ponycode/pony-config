@@ -4,7 +4,7 @@
   "description": "Small configuration loader",
   "main": "index.js",
   "scripts": {
-    "test": "test"
+    "test": "PONYCONFIG_TRUE=1 PONYCONFIG_FALSE=0 PONYCONFIG_ENV=ENVVAR_ENVIRONMENT mocha test"
   },
   "repository": {
     "type": "git",
@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "minimist": "~1.1.0",
-    "chalk": "^1.0.0"
+    "chalk": "^1.0.0",
+    "fs-coalesce": "^0.1.3"
   }
 }

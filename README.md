@@ -155,7 +155,7 @@ Results in
 
 ---
 
-## Run-time Environment Configuation
+## Run-time Environment Configuration
 
 Often it's necessary to load a slightly different configuration for each of your run-time environments. **pony-config** does this in three steps.
 
@@ -164,7 +164,7 @@ Often it's necessary to load a slightly different configuration for each of your
 
 Configuration sources that aren't needed for the current environment are ignored, so you can declare all of your configuration sources in your main script file and let **pony-config** apply the right ones at run-time.
 
-### Determing the Run-time Environment
+### Determining the Run-time Environment
 **pony-config** can help you determine the run-time environment by searching for two kinds of environment determinants: files and environment variables.  File determinants are provided for platforms that lack configurable environment variables.
 
 
@@ -182,9 +182,11 @@ File Determinants are text files containing a string that will be the key.  For 
 
 If options.**debug**=true, the search will be logged to console.log
 
+Path may include **~** to represent user home directory
+
 Example
 ```javascript
-config.findEnvironment( { paths:['./env-file'], env: 'ENVIRONMENT', default:'prod');
+config.findEnvironment( { paths:['~/.env', './env-file'], env: 'ENVIRONMENT', default:'prod');
 ```
 
 ### Declare Which Configurations to Apply
@@ -217,7 +219,7 @@ Returns the current environment key.  Returns ```false``` is no environment key 
 ---
 
 ## Debugging
-####list()
+####list( { noColor: *true* | *false* } )
 Outputs the current configuration to console.log, including the final configuration source of each key value. This is extremely useful for debugging configuration merges from multiple sources.  The output looks like:
 
 ```
@@ -231,14 +233,21 @@ Outputs the current configuration to console.log, including the final configurat
     |--zip-state : 49013-CA  [SET]
 ```
 
-####setOptions({ debug: true });
+####setOptions( options );
 Turns on additional logging. Useful for tracing the loading of configuration files and environment search.
 
+options.debug = *true* | *false*        turns on logging (default is false)
+options.noColor = *true* | *false*      turns on color logging (default is false)
+
+
 ###See Also
-**pony-config** uses [minimist](https://www.npmjs.com/package/minimist) for command line argument parsing because it does exactly one thing and does it well. 
+**pony-config** uses 
+- [minimist](https://www.npmjs.com/package/minimist) for command line argument parsing because it does exactly one thing and does it well. 
+- [fs-coalesce](https://www.npmjs.com/package/fs-coalesce) to search file paths. This module (also by [ponycode](https://www.npmjs.com/~ponycode)) extends the file path syntax to include '~', and automatically matches on the first extant file in an array of paths.
 
-###Coming Soon
-The next version of **pony-config** will use [fs-coalesce](https://www.npmjs.com/package/fs-coalesce) to search file paths. This module (also by [ponycode](https://www.npmjs.com/~ponycode)) extends the file path syntax to include '~', and automatically matches on the first extant file in an array of paths.
+#### Tests
 
-###License
+```npm test```
+
+#### License
 Copyright (c) 2014 PonyCode Corporation Licensed under the MIT license.

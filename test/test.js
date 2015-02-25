@@ -95,14 +95,14 @@ describe('useObject', function(){
 
 describe('useObject', function(){
     it('use a file containing an object', function(){
-        config.useFile('data/config_1.json');
+        config.useFile('test/data/config_1.json');
         assert.equal( 'r1_value_1', config.get('root_node_1') );
         assert.equal( 'r2_s2_value_1', config.get('root_node_2.sub_node_2') );
     });
 
     it('use file, two files containing an object, replaced or merged', function(){
-        config.useFile('data/config_1.json');
-        config.useFile('data/config_2.json');
+        config.useFile('test/data/config_1.json');
+        config.useFile('test/data/config_2.json');
         assert.equal( 'r1_value_2', config.get('root_node_1'), 'root node should be replaced' );
         assert.equal( 'r2_s2_value_2', config.get('root_node_2.sub_node_2'), 'root node 2 sub_value2 should be replaced' );
         assert.equal( 'r3_value_1', config.get('root_node_3'), 'root node 3 should be original' );
@@ -145,32 +145,32 @@ describe('findEnvironment', function(){
     });
 
     it('search environment, missing file', function(){
-        config.findEnvironment( { paths: "data/missing-file", default: 'Default Environment' } );
+        config.findEnvironment( { paths: "test/data/missing-file", default: 'Default Environment' } );
         assert.equal( 'Default Environment', config.getEnvironment());
     });
 
     it('search environment, single file', function(){
-        config.findEnvironment( { paths: "data/env-file", default: 'Default Environment' } );
+        config.findEnvironment( { paths: "./test/data/env-file", default: 'Default Environment' } );
         assert.equal( 'Test File Environment', config.getEnvironment());
     });
 
     it('search environment, search file paths, one path', function(){
-        config.findEnvironment( { paths: ["data/env-file"], default: 'Default Environment' } );
+        config.findEnvironment( { paths: ["test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'Test File Environment', config.getEnvironment());
     });
 
     it('search environment, search file paths, multiple paths', function(){
-        config.findEnvironment( { paths: [".", "data/missing-file", "data/env-file"], default: 'Default Environment' } );
+        config.findEnvironment( { paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'Test File Environment', config.getEnvironment());
     });
 
     it('search environment, env var not found', function(){
-        config.findEnvironment( { env: "PONYCONFIG_ENV_MISSING", paths: [".", "data/missing-file", "data/env-file"], default: 'Default Environment' } );
+        config.findEnvironment( { env: "PONYCONFIG_ENV_MISSING", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'Test File Environment', config.getEnvironment());
     });
 
     it('search environment, env var used', function(){
-        config.findEnvironment( { env: "PONYCONFIG_ENV", paths: [".", "data/missing-file", "data/env-file"], default: 'Default Environment' } );
+        config.findEnvironment( { env: "PONYCONFIG_ENV", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'ENVVAR_ENVIRONMENT', config.getEnvironment());
     });
 
