@@ -165,3 +165,50 @@ describe('Original objects remain unchanged', function() {
 
 });
 
+describe('Arrays merge over back objects', function() {
+
+	it('should merge array over primitive property', function(){
+
+		var inputObject1 = {
+			key1 : "value1"
+		};
+
+		var inputObject2 = {
+			key1 : ["value_a0", "value_a1"]               // key1 gets replaced with a array
+		};
+
+		var outputObject = config.mergeObjects( inputObject1, inputObject2 );
+
+		assert.deepEqual( outputObject,
+			{
+				key1 : ["value_a0", "value_a1"]
+			});
+		
+		assert.equal( Array.isArray( outputObject.key1 ), true );
+	});
+
+});
+
+describe('Arrays replace over back arrays', function() {
+
+	it('should merge array over primitive property', function(){
+
+		var inputObject1 = {
+			key1 : ["value_a0", "value_a1"]
+		};
+
+		var inputObject2 = {
+			key1 : ["value_a2", "value_a3"]               // key1 gets replaced with a array
+		};
+
+		var outputObject = config.mergeObjects( inputObject1, inputObject2 );
+
+		assert.deepEqual( outputObject,
+			{
+				key1 : ["value_a2", "value_a3"]
+			});
+		
+		assert.equal( Array.isArray( outputObject.key1 ), true );
+	});
+
+});

@@ -4,5 +4,8 @@
         "sub_node_1" : "r2_s1_value_1",
         "sub_node_2" : "r2_s2_value_1"
     },
-    "root_node_3" : "r3_value_1"
+    "root_node_3" : "r3_value_1",
+    "root_node_5" : [
+      "r5_value_0", "r5_value_1"
+    ]
 }
