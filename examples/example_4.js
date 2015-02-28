@@ -1,6 +1,6 @@
 var config = require('../index.js');
 
-config.setOptions( { debug: true } );
+config.setOptions( { debug: true, immutable: true } );
 config.findEnvironment( { paths:['~/test-pony-config-env','./example-env-file'], env: 'ENVIRONMENT', default:'prod', debug: true} );
 
 config.useObject({ 'organization': 'PonyCode' });
@@ -15,9 +15,7 @@ config.set('date', new Date() );
 
 config.get('address.zip');
 
-config.list();
 config.lock( false );
 
-config.get("occupants").push("Stuart");
 config.list();
 

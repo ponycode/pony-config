@@ -16,6 +16,7 @@
     // External dependencies
     // ----------------------------
     var fs = require('fs');
+    var _ = require('lodash');
 
     // ----------------------------
     // Local dependencies
@@ -35,6 +36,7 @@
     var _parsedArgs = [];
 	var _locked = false;
 
+    // For Debug and Test - return state to initial, with optional alternative 'command line arguments'
     function _reset( options ){
         _config = new Config();
         _options = {};
@@ -63,6 +65,9 @@
     // ----------------------------
     // Options:
     //  debug - logs configuration changes
+    //  exceptionOnLocked - throw exception on attempt to set property after lock
+    //  cloneWhenLocked - return clones of all objects to enforce lock
+    //  noColor - no color in list output
     // ----------------------------
     function _setOptions( options ){
         _options = options || {};
@@ -199,12 +204,11 @@
 	    var chalk = require('chalk');
 		
 	    chalk.enabled = ! noColor;
-	    
-        if( _environment ) {
-            console.log( chalk.white.bold('CONFIG') + ': [' + chalk.green( _environment ) + ']');
-        }else{
-            console.log( chalk.white.bold('CONFIG') );
-        }
+
+        var header = chalk.white.bold('CONFIG');
+        if( _environment ) header += ': [' + chalk.green.bold( _environment ) + ']';
+        if( _locked ) header += ' [' + chalk.red.bold( 'LOCKED' ) + ']';
+        console.log( header );
 
         _config.list();
 
@@ -228,7 +232,9 @@
     // Get config with a dot-path key, e.g., get( tree.height )
     // ----------------------------
     function _get( configKeyPath, defaultValue ){
-        return _config.get( configKeyPath, defaultValue );
+        var value = _config.get( configKeyPath, defaultValue );
+        if( _locked && _options.cloneWhenLocked ) value = _.cloneDeep( value );
+        return value;
     }
 
 
