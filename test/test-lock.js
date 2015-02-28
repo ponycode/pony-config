@@ -1,6 +1,11 @@
 var assert = require("assert");
 var _ = require('lodash');
+
 var config = require('../index');
+
+beforeEach( function(){
+    config.reset();
+});
 
 // Instance of a composite config data
 function getInitialObject(){
