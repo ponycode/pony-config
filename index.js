@@ -200,14 +200,14 @@
 		
 	    chalk.enabled = ! noColor;
 	    
-	    console.log('------------------------------------');
         if( _environment ) {
-            console.log('CONFIG: [' + chalk.green( _environment ) + ']');
+            console.log( chalk.white.bold('CONFIG') + ': [' + chalk.green( _environment ) + ']');
         }else{
-            console.log('CONFIG:');
+            console.log( chalk.white.bold('CONFIG') );
         }
+
         _config.list();
-        console.log('------------------------------------');
+
         return this;
     }
 

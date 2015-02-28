@@ -9,13 +9,15 @@ config.when(['prod','stage']).useFile( 'example-prod-config.json' );
 config.when('dev').useCommandLineArguments({ path:'address.zip', options:'zip' });
 
 config.set('address.zip-state', config.get('address.zip')+'-'+config.get('address.state'));
-config.set('occupants', ['Scott','Steve','Stacy'] );
+config.set('occupants', ['Scott','Steve','Stacy', ["Mother","Father"]] );
 config.set('token', new Buffer("secretToken") );
 config.set('date', new Date() );
 
 config.get('address.zip');
 
 config.list();
-config.lock( true );
+config.lock( false );
 
-config.set("test",false);
+config.get("occupants").push("Stuart");
+config.list();
+
