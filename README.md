@@ -32,7 +32,8 @@ For example,
 ```javascript
 config.findEnvironment( { paths:['./env-file'], env: 'ENVIRONMENT', default:'prod');
 ```
-## A Simple Example
+
+### A Simple Example
 ```javascript
 var config = require('pony-config');
 
@@ -43,6 +44,7 @@ var name = config.get('name');
 var street = config.get('address.street');
 config.set('verified', true);
 ```
+
 ---
 # Getting Started
 
@@ -104,7 +106,7 @@ var port = config.get( "settings,server.port" );
 
 ####useCommandlineArgs( *usageRule* | [*usageRules*] )
 
-Configuration values can be loaded from the command line. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and valued are added at dot-paths in the configuration. CLI *usageRules* are defined similarly to many commandline processing tools.
+Configuration values can be loaded from the command line. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and values are added at dot-paths in the configuration. CLI *usageRules* are defined similarly to many commandline processing tools.
 
 ***usageRule*** = { paths: *dotPath*, options: *optionFlags* | [*optionFlags*] }  
 
@@ -123,11 +125,20 @@ config.useCommandlineArgs( [
 ```
 
 ## Locking Config Against Changes
-When the configuration is set, you can lock it against further changes.  Pass *true* to have change attempts throw an exception, or set { 'exceptionOnLocked' : true } in your config options.
+Once the configuration is set, you can lock it against further changes.  Pass *true* to have change attempts throw an exception, or set { 'exceptionOnLocked' : true } in your config options.
+Once locked, all calls to set() or use...() will do nothing (or throw an exception if exceptionOnLocked is true).
+
+In development and testing, it's probably best to throw an exception as these are programming errors.  For example, the following code snippet only sets
+exceptionOnLocked while the environment is _dev_.
 
 ```javascript
-config.lock( true | false );
+config.lock( config.getEnvironment() === 'dev'  );
 ```
+
+If require further protection from mutations of the config, use setOptions( { 'cloneWhenLocked' : true }. All of your get() methods will return clones of
+config objects (with the exception of functions, which are returned without cloning so that internal state is preserved).
+
+Cloning comes with the cost of memory and cloning-time for each request, so consider the real risk and likelihood of mutations in your code before using *cloneWhenLocked*.
 
 ---
 
@@ -233,11 +244,13 @@ Outputs the current configuration to console.log, including the final configurat
     |--zip-state : 49013-CA  [SET]
 ```
 
-####setOptions( options );
+####setOptions( o );
 Turns on additional logging. Useful for tracing the loading of configuration files and environment search.
 
-options.debug = *true* | *false*        turns on logging (default is false)
-options.noColor = *true* | *false*      turns on color logging (default is false)
+    o.debug = true | false              turns on logging (default is false)
+    o.noColor = true | false            turns on color logging (default is false)
+    o.cloneWhenLocked = true | false    turns on cloning for get() when locked (defaults false)
+    o.exceptionOnLocked = true | false  throw exception set or use called wheh locked (default is false) 
 
 
 ###See Also
