@@ -215,6 +215,11 @@
     // Set configuration using an dot-path key, eg. (tree.height, 25)
     // ----------------------------
     function _set( configKeyPath, configValue ){
+        if( _locked ){
+            if( _options.exceptionOnLocked ) throw Error( 'CONFIG: Cannot modify config after locking' );
+            else console.error('CONFIG: Cannot modify config after locking' );
+            return false;
+        }
         _config.set( configKeyPath, configValue, 'SET' );
         return this;
     }
