@@ -233,7 +233,11 @@
     // ----------------------------
     function _get( configKeyPath, defaultValue ){
         var value = _config.get( configKeyPath, defaultValue );
-        if( _locked && _options.cloneWhenLocked ) value = _.cloneDeep( value );
+        if( _locked && _options.cloneWhenLocked ){
+            if( ! (value instanceof Function) ){        // function mutability is strange, function may have state, and this preserves state
+                value = _.cloneDeep( value );
+            }
+        }
         return value;
     }
 
