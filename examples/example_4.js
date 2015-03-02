@@ -14,6 +14,6 @@ config.set('occupants', ['Scott','Steve','Stacy', ["Mother","Father"]] );
 config.set('token', new Buffer("secretToken") );
 config.set('date', new Date() );
 config.set('fn', function( x ){ return x+1; } );
-
+config.set('anUndefined', undefined );
 config.list();
 
