@@ -16,11 +16,7 @@ describe('obj', function(){
 describe('Merge Primitives', function(){
 
     it('should return a number', function(){
-        assert.equal( config.mergeObjects( 2, undefined ), 2);
-    });
-
-    it('should return a number', function(){
-        assert.equal( config.mergeObjects( 2, undefined ), 2);
+        assert.equal( config.mergeObjects( 2, undefined ), undefined);
     });
 
     it('should return a number', function(){

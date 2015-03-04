@@ -1,4 +1,5 @@
 var assert = require("assert");
+var expect = require('expect');
 
 var config = require('../index');
 
@@ -93,7 +94,7 @@ describe('useObject', function(){
     });
 });
 
-describe('useObject', function(){
+describe('use file', function(){
     it('use a file containing an object', function(){
         config.useFile('test/data/config_1.json');
         assert.equal( 'r1_value_1', config.get('root_node_1') );
@@ -109,6 +110,12 @@ describe('useObject', function(){
         assert.equal( 'r4_value_2', config.get('root_node_4'), 'root node 4 should be new' );
 
         assert.equal('r2_s1_value_1', config.get('root_node_2.sub_node_1'), 'root node 2 sub_node1 should be original');
+    });
+
+    it('should not throw exception for bad json in file', function(){
+        expect( function(){
+            config.useFile('test/data/config_3.json');
+        }).toNotThrow();
     });
 });
 
@@ -129,6 +136,16 @@ describe('useEnvironmentVar', function(){
         assert.equal( false, config.get( 'test.falseValue'));
         assert.equal( undefined, config.get( 'test.missingValue'));
     });
+
+    it('use environment variables in when clause', function(){
+        config.useEnvironment('Test Environment');
+        config.when( 'Wrong Environment').useEnvironmentVar( 'key_unset', 'PONYCONFIG_TRUE' );
+        config.when( 'Test Environment').useEnvironmentVar( 'key_set', 'PONYCONFIG_TRUE' );
+
+        assert.equal( undefined, config.get( 'key_unset' ));
+        assert.equal( true, config.get( 'key_set'));
+    });
+
 });
 
 //-----------
@@ -174,6 +191,31 @@ describe('findEnvironment', function(){
         assert.equal( 'ENVVAR_ENVIRONMENT', config.getEnvironment());
     });
 
+    it('search environment, env var used, debug true', function(){
+        config.findEnvironment( { debug: true, env: "PONYCONFIG_ENV", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
+        assert.equal( 'ENVVAR_ENVIRONMENT', config.getEnvironment());
+    });
+
+    it('search environment, single file, debug true', function(){
+        config.findEnvironment( { debug: true, paths: "./test/data/env-file", default: 'Default Environment' } );
+        assert.equal( 'Test File Environment', config.getEnvironment());
+    });
+
+    it('search environment, empty options', function(){
+        config.findEnvironment( {} );
+        assert.equal( false, config.getEnvironment());
+    });
+
+    it('search environment, empty options, debug true', function(){
+        config.findEnvironment( { debug: true } );
+        assert.equal( false, config.getEnvironment());
+    });
+
+    it('search environment, env var not found, debug true', function(){
+        config.findEnvironment( { debug: true, env: "PONYCONFIG_ENV_MISSING", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
+        assert.equal( 'Test File Environment', config.getEnvironment());
+    });
+
 });
 
 describe('useEnvironment', function(){
@@ -209,16 +251,15 @@ describe('useEnvironment', function(){
 });
 
 describe('useCommandLine', function(){
-    beforeEach( function(){
-        config.reset( { arguments : '-f filename -v version -ab' } );
-    });
 
     it('one command line argument with value', function(){
+        config.setOptions( { customCommandlineArguments : '-f filename -v version -ab' });
         config.useCommandLineArguments( { path: 'version', options : 'v' } );
         assert.equal( 'version', config.get('version'), 'should be set');
     });
 
     it('command line arguments with values', function(){
+        config.setOptions( { customCommandlineArguments : '-f filename -v version -ab' });
         config.useCommandLineArguments(
             [
                 { path: 'version', options : 'v' },
@@ -236,4 +277,13 @@ describe('useCommandLine', function(){
 
 });
 
+describe('useCommandLine empty arguments', function() {
+
+    it('one command line argument with value', function(){
+        config.setOptions( { customCommandlineArguments : '' });
+        config.useCommandLineArguments( { path: 'version', options : 'v' } );
+        var version = config.get('version');
+        assert.equal( undefined, version, 'should be unset');
+    });
+});
 
