@@ -108,9 +108,9 @@ var port = config.get( "settings,server.port" );
 
 Configuration values can be loaded from the command line. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and values are added at dot-paths in the configuration. CLI *usageRules* are defined similarly to many commandline processing tools.
 
-***usageRule*** = { paths: *dotPath*, options: *optionFlags* | [*optionFlags*] }  
+***usageRule*** = { paths: *dotPath*, options: *optionFlags* | [*optionFlags*] }
 
-For example, if your program's options are **-f|--file filename, -a|--appendmode, -s**, 
+For example, if your program's options are **-f|--file filename, -a|--appendmode, -s**,
 then the following will load 'hamster.jpg' at 'outputs.binaryFilename', and true at 'settings.appendMode' with the following usageRules.  Any expected argument that is not found will be ignored.
 
 ```bash
@@ -155,7 +155,7 @@ config.useObject( { name : { nickname : "Buckaroo" }, gender : "male" } );
 Results in
 ```javascript
 {
-    name : { 
+    name : {
         first : "Mike",             // from first source
         last : "Moneybags",         // from first source
         nickname : "Buckaroo" },    // extended from "name" node in second source
@@ -211,7 +211,7 @@ config.when(['prod','stage']).useObject({ database : 'mongodb' });
 ```
 
 ####always()
-Always load the configuration source.  This is the default, but it is sometimes helpful to be explicit. 
+Always load the configuration source.  This is the default, but it is sometimes helpful to be explicit.
 
 ```javascript
 config.always().useFile( 'common.json' });
@@ -230,17 +230,27 @@ Returns the current environment key.  Returns ```false``` is no environment key 
 ---
 
 ## Debugging
-####list( { noColor: *true* | *false* } )
-Outputs the current configuration to console.log, including the final configuration source of each key value. This is extremely useful for debugging configuration merges from multiple sources.  The output looks like:
+####list( options )
+
+options are:
+    noColor = true | false            turns on color logging (default is false)
+    maxListDepth                      number of levels of config to list (default is 8, minimum 0)
+    maxListValueLength                length of values to output, truncated if longer (default is 80)
+    outputStream                      an object to be called instead of console.log for the output
+
+Outputs the current configuration, including the final configuration source of each key value.
+This is extremely useful for debugging configuration merges from multiple sources.
+Output will be sent to console.log, unless outputStream option is set, in which case outputStream() is called in place of console.log().
+The output looks like:
 
 ```
-    CONFIG: [dev]
+    CONFIG: [dev] [LOCKED]
     organization : PonyCode  [USE-OBJECT]
     name : Harry Chesterson  [USE-FILE:example-dev-config.json]
     address :  [USE-FILE:example-dev-config.json]
-    |--street : 24 Merry Way 
+    |--street : 24 Merry Way
     |--zip : 49013  [USE-COMMAND-LINE:zip]
-    |--state : CA 
+    |--state : CA
     |--zip-state : 49013-CA  [SET]
 ```
 
@@ -258,8 +268,8 @@ Turns on additional logging. Useful for tracing the loading of configuration fil
 
 
 ###See Also
-**pony-config** uses 
-- [minimist](https://www.npmjs.com/package/minimist) for command line argument parsing because it does exactly one thing and does it well. 
+**pony-config** uses
+- [minimist](https://www.npmjs.com/package/minimist) for command line argument parsing because it does exactly one thing and does it well.
 - [fs-coalesce](https://www.npmjs.com/package/fs-coalesce) to search file paths. This module (also by [ponycode](https://www.npmjs.com/~ponycode)) extends the file path syntax to include '~', and automatically matches on the first extant file in an array of paths.
 
 #### Tests
