@@ -37,16 +37,13 @@
 	var _locked = false;
 
     // For Debug and Test - return state to initial, with optional alternative 'command line arguments'
-    function _reset( options ){
+    function _reset(){
         _config = new Config();
         _options = {};
         _environment = false;
         _whenEnvironments = false;
         _parsedArgs = [];
 	    _locked = false;
-        if( options && options.arguments ){
-            _options._debugOverrideCommandlineArgs = options.arguments;
-        }
     }
 
 	// ----------------------------
@@ -68,6 +65,7 @@
     //  exceptionOnLocked - throw exception on attempt to set property after lock
     //  cloneWhenLocked - return clones of all objects to enforce lock
     //  noColor - no color in list output
+    //  customCommandlineArguments - command line option string to use instead of process.args
     // ----------------------------
     function _setOptions( options ){
         _options = options || {};
@@ -164,10 +162,7 @@
     function _useCommandLineArguments( usageRules ){
 	    if( _shouldApplyConfig( _whenEnvironments ) ){
 
-            var options = {};
-            if( _options._debugOverrideCommandlineArgs ){
-                options = { "arguments" : _options._debugOverrideCommandlineArgs };
-            }
+            var options = { "arguments" : _options.customCommandlineArguments };
 
             var interpreter = new argv.Interpreter( usageRules, options );
             _parsedArgs = interpreter.args;

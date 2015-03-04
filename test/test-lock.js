@@ -1,4 +1,6 @@
 var assert = require("assert");
+var expect = require("expect");
+
 var _ = require('lodash');
 
 var config = require('../index');
@@ -61,6 +63,51 @@ describe('Lock guards set method', function(){
         config.set( "string", "wrongStrong" );
         assert.deepEqual( config.get('.'), goldStandard );
     });
+});
+
+describe('Lock can throw exception', function(){
+    it('should throw exception on set', function(){
+        var instance = getInitialObject();
+
+        config.useObject( instance );
+        config.lock( true );
+        expect( function(){
+            config.set( "string", "change");
+        }).toThrow(/lock/);
+    });
+
+    it('should throw exception on set using exceptionOnLocked config setting', function(){
+        var instance = getInitialObject();
+        config.setOptions({ exceptionOnLocked : true });
+        config.useObject( instance );
+        config.lock();
+        expect( function(){
+            config.set( "string", "change");
+        }).toThrow(/lock/);
+    });
+
+    it('should throw exception on use... using exceptionOnLocked config setting', function(){
+        var instance = getInitialObject();
+        config.setOptions({ exceptionOnLocked : true });
+        config.useObject( instance );
+        config.lock();
+
+        expect( function(){
+            config.useObject( instance );
+        }).toThrow(/lock/);
+    });
+
+    it('should NOT throw exception on use... overriding exceptionOnLocked config setting', function(){
+        var instance = getInitialObject();
+        config.setOptions({ exceptionOnLocked : true });
+        config.useObject( instance );
+        config.lock(false);
+
+        expect( function(){
+            config.useObject( instance );
+        }).toNotThrow(/lock/);
+    });
+
 });
 
 describe('Lock returns deep clone', function(){

@@ -244,13 +244,17 @@ Outputs the current configuration to console.log, including the final configurat
     |--zip-state : 49013-CA  [SET]
 ```
 
+####reset()
+Used in tests, reset clears the Config for reusing an object
+
 ####setOptions( o );
 Turns on additional logging. Useful for tracing the loading of configuration files and environment search.
 
     o.debug = true | false              turns on logging (default is false)
     o.noColor = true | false            turns on color logging (default is false)
     o.cloneWhenLocked = true | false    turns on cloning for get() when locked (defaults false)
-    o.exceptionOnLocked = true | false  throw exception set or use called wheh locked (default is false) 
+    o.exceptionOnLocked = true | false  throw exception set or use called wheh locked (default is false)
+    o.customCommandlineArguments        argument string to use instead of process.argv (eg, "-v 1.04 -print -out file")
 
 
 ###See Also
@@ -261,6 +265,12 @@ Turns on additional logging. Useful for tracing the loading of configuration fil
 #### Tests
 
 ```npm test```
+
+#### Test Coverage (via istanbul.js)
+- Statements   : 95.32% ( 326/342 )
+- Branches     : 84.29% ( 161/191 )
+- Functions    : 100% ( 39/39 )
+- Lines        : 98.06% ( 303/309 )
 
 #### License
 Copyright (c) 2014 PonyCode Corporation Licensed under the MIT license.

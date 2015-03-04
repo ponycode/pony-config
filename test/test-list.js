@@ -41,6 +41,19 @@ describe('List smoketest', function(){
 
 });
 
+describe('List header', function(){
+    it('should return log header', function(){
+        config.findEnvironment( { default: 'test' } );
+        config.lock();
+        config.list( { outputStream : outputStream, noColor : true });
+        var out = log.join('/');
+        expect( out).toContain('CONFIG');
+        expect( out).toContain('[test]');
+        expect( out).toContain('[LOCKED]');
+    });
+
+});
+
 describe('List Properties', function(){
 
     it('should log a string', function(){
