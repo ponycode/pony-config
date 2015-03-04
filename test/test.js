@@ -174,6 +174,31 @@ describe('findEnvironment', function(){
         assert.equal( 'ENVVAR_ENVIRONMENT', config.getEnvironment());
     });
 
+    it('search environment, env var used, debug true', function(){
+        config.findEnvironment( { debug: true, env: "PONYCONFIG_ENV", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
+        assert.equal( 'ENVVAR_ENVIRONMENT', config.getEnvironment());
+    });
+
+    it('search environment, single file, debug true', function(){
+        config.findEnvironment( { debug: true, paths: "./test/data/env-file", default: 'Default Environment' } );
+        assert.equal( 'Test File Environment', config.getEnvironment());
+    });
+
+    it('search environment, empty options', function(){
+        config.findEnvironment( {} );
+        assert.equal( false, config.getEnvironment());
+    });
+
+    it('search environment, empty options, debug true', function(){
+        config.findEnvironment( { debug: true } );
+        assert.equal( false, config.getEnvironment());
+    });
+
+    it('search environment, env var not found, debug true', function(){
+        config.findEnvironment( { debug: true, env: "PONYCONFIG_ENV_MISSING", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
+        assert.equal( 'Test File Environment', config.getEnvironment());
+    });
+
 });
 
 describe('useEnvironment', function(){
@@ -235,5 +260,4 @@ describe('useCommandLine', function(){
     });
 
 });
-
 
