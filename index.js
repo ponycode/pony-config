@@ -200,17 +200,19 @@
     // Log the current configuration
     // ----------------------------
     function _list( options ){
-	    var noColor = ( (options && options.noColor) || _options.noColor );
+        options = options || {};
+        if( options.noColor === undefined ) options.noColor = _options.noColor;
+        if( options.outputStream == undefined ) options.outputStream = console.log;
 	    var chalk = require('chalk');
 		
-	    chalk.enabled = ! noColor;
+	    chalk.enabled = ! options.noColor;
 
         var header = chalk.white.bold('CONFIG');
         if( _environment ) header += ': [' + chalk.green.bold( _environment ) + ']';
         if( _locked ) header += ' [' + chalk.red.bold( 'LOCKED' ) + ']';
-        console.log( header );
+        options.outputStream( header );
 
-        _config.list();
+        _config.list( options );
 
         return this;
     }

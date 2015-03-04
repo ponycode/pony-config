@@ -17,7 +17,7 @@ function getInitialObject(){
         },
         array : ["value_a","value_b"],
         buffer : new Buffer("buffer"),
-        date : new Date(2014, 12, 25),
+        date : new Date(2014, 11, 25),
         fn : function(x){ return "func"; },
         regx : /[regx]/
     };

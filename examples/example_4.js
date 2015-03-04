@@ -15,5 +15,5 @@ config.set('token', new Buffer("secretToken") );
 config.set('date', new Date() );
 config.set('fn', function( x ){ return x+1; } );
 
-config.list();
+config.list( { maxListValueLength : 20 } );
 
