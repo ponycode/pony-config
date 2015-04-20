@@ -104,7 +104,7 @@ config.useEnvironmentVar( "settings.server.port", "PORT");
 var port = config.get( "settings,server.port" );
 ```
 
-####useCommandlineArgs( *usageRule* | [*usageRules*] )
+####useCommandlineArguments( *usageRule* | [*usageRules*] )
 
 Configuration values can be loaded from the command line. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and values are added at dot-paths in the configuration. CLI *usageRules* are defined similarly to many commandline processing tools.
 
