@@ -276,13 +276,13 @@ Turns on additional logging. Useful for tracing the loading of configuration fil
 
 #### Tests
 
-```npm test```
+```npm test``` or ```grunt test```
 
 #### Test Coverage (via istanbul.js)
-- Statements   : 95.32% ( 326/342 )
-- Branches     : 84.29% ( 161/191 )
-- Functions    : 100% ( 39/39 )
-- Lines        : 98.06% ( 303/309 )
+Statements   : 94.83% ( 330/348 )
+Branches     : 83.94% ( 162/193 )
+Functions    : 100% ( 41/41 )
+Lines        : 97.46% ( 307/315 )
 
 #### License
 Copyright (c) 2014 PonyCode Corporation Licensed under the MIT license.

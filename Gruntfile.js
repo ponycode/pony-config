@@ -18,11 +18,35 @@ module.exports = function(grunt) {
                 }
             }
         },
+
+		env : {
+			options: {
+				//Shared Options Hash
+			},
+			test: {
+				PONYCONFIG_TRUE: 1,
+				PONYCONFIG_FALSE: 0,
+				PONYCONFIG_ENV: "ENVVAR_ENVIRONMENT"
+				// PONYCONFIG_MISSING should be undefined
+			},
+		},
+
+        mochaTest: {
+            test: {
+                options: {
+                    reporter: 'spec',
+                    captureFile: 'testResults.txt',
+                },
+                src: ['test/**/*.js']
+            }
+        }
     });
 
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-mocha-test');
+	grunt.loadNpmTasks('grunt-env');
 
-    // Default task(s).
+    grunt.registerTask('test', ['env:test', 'mochaTest']);
     grunt.registerTask('default', ['jshint']);
 
 };
