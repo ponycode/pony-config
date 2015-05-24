@@ -203,7 +203,7 @@
     function _list( options ){
         options = options || {};
         if( options.noColor === undefined ) options.noColor = _options.noColor;
-        if( options.outputStream == undefined ) options.outputStream = console.log;
+        if( options.outputStream === undefined ) options.outputStream = console.log;
 	    var chalk = require('chalk');
 		
 	    chalk.enabled = ! options.noColor;
