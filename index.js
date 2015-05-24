@@ -33,7 +33,8 @@
     var _options = {};
     var _environment = false;               // by default no environment is selected
     var _whenEnvironments = false;
-    var _parsedArgs = [];
+	var _interpreter = false;
+
 	var _locked = false;
 
     // For Debug and Test - return state to initial, with optional alternative 'command line arguments'
@@ -42,7 +43,6 @@
         _options = {};
         _environment = false;
         _whenEnvironments = false;
-        _parsedArgs = [];
 	    _locked = false;
     }
 
@@ -162,17 +162,13 @@
     function _useCommandLineArguments( usageRules ){
 	    if( _shouldApplyConfig( _whenEnvironments ) ){
 
-            var options = { "arguments" : _options.customCommandlineArguments };
-
-            var interpreter = new argv.Interpreter( usageRules, options );
-            _parsedArgs = interpreter.args;
+			_parseCommandlineArguments( usageRules );
 
             usageRules = arrayWrap.wrap( usageRules );
             for( var i=0; i < usageRules.length; i++ ){
-                var path = usageRules[i].path.replace(/^-*/,'');        // strip any number of leading dashes
-                var value = interpreter.values[ path ];
-                if( value ){
-                    _config.set( path, value, 'USE-COMMAND-LINE:' + usageRules[i].options );
+                var value = _getCommandlineValue( usageRules[i].path );
+                if( value !== undefined ){
+                    _config.set( usageRules[i].path, value, 'USE-COMMAND-LINE:' + usageRules[i].options );
                 }
             }
         }
@@ -180,7 +176,17 @@
         return this;
     }
 
-    // ----------------------------
+	// ----------------------------
+	// Parse Commandline Arguments. Alternative to 'use'.  Parses command line without applying values to config
+	// ----------------------------
+	function _parseCommandlineArguments( usageRules ){
+		var options = { "arguments" : _options.customCommandlineArguments };
+		_interpreter = new argv.Interpreter( usageRules, options );
+		return this;
+	}
+
+
+	// ----------------------------
     // Set configuration using an object
     // ----------------------------
     function _useObject( configData ){
@@ -260,6 +266,16 @@
         }
     }
 
+	// ----------------------------
+	// Fetch the value of a command line argument by config key path without applying it to the config
+	// ----------------------------
+	function _getCommandlineValue( configKeyPath ){
+		if( ! _interpreter ) {
+			console.warn( "CONFIG: call parseCommandlineArguments( usage ) before getCommandlineValue" );
+			return undefined;
+		}
+		return _interpreter.values[ configKeyPath ];
+	}
 
     // ----------------------------
     // Expose public functions
@@ -279,6 +295,7 @@
     exports.list = _list;
     exports.reset = _reset;
 	exports.lock = _lock;
-    exports.parsedArgs = _parsedArgs;
+	exports.parseCommandlineArguments = _parseCommandlineArguments;
+	exports.getCommandlineValue = _getCommandlineValue;
 
 })();

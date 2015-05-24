@@ -111,18 +111,21 @@ Configuration values can be loaded from the command line. Arguments are parsed f
 ***usageRule*** = { paths: *dotPath*, options: *optionFlags* | [*optionFlags*] }
 
 For example, if your program's options are **-f|--file filename, -a|--appendmode, -s**,
-then the following will load 'hamster.jpg' at 'outputs.binaryFilename', and true at 'settings.appendMode' with the following usageRules.  Any expected argument that is not found will be ignored.
+then the following will load 'hamster.jpg' at 'outputs.binaryFilename', and true at 'settings.appendMode'.  Any expected argument that is not found will be ignored.
 
 ```bash
 funnyprogram -f hamster.jpg -a
 ```
 ```javascript
-config.useCommandlineArgs( [
+config.useCommandlineArguments( [
     { path : "outputs.binaryFilename", options : ["f","file"] },
     { path : "settings.appendMode", options : ["a","appendMode"] },
     { path : "settings.silentMode", options : "s" }
 ]);
 ```
+
+An alternative way to utilize command line arguments with pony-config is to call ```parseCommandlineArguments( *usageRules* )```, which will interpret the command line arguments
+without committing them to the configuration. Then you can use ```getCommandlineValue( *path* )``` to access the values that were passed on the command line.
 
 ## Locking Config Against Changes
 Once the configuration is set, you can lock it against further changes.  Pass *true* to have change attempts throw an exception, or set { 'exceptionOnLocked' : true } in your config options.
@@ -168,7 +171,7 @@ Results in
 
 ## Run-time Environment Configuration
 
-Often it's necessary to load a slightly different configuration for each of your run-time environments. **pony-config** does this in three steps.
+Often it's necessary to load a slightly different configuration for each of your run-time environments. **pony-config** does this in two steps.
 
 - Tell **pony-config** how to determine the run-time environment
 - Indicate which configuration sources are to be loaded for which environments
@@ -176,20 +179,19 @@ Often it's necessary to load a slightly different configuration for each of your
 Configuration sources that aren't needed for the current environment are ignored, so you can declare all of your configuration sources in your main script file and let **pony-config** apply the right ones at run-time.
 
 ### Determining the Run-time Environment
-**pony-config** can help you determine the run-time environment by searching for two kinds of environment determinants: files and environment variables.  File determinants are provided for platforms that lack configurable environment variables.
-
+**pony-config** can determine the run-time environment by searching for two kinds of environment determinants: files and environment variables. Environment variables are available on most platforms, and file determinants are provided for platforms that lack configurable environments or shells.
 
 File Determinants are text files containing a string that will be the key.  For example, a file named ".env-file' may contain the string 'prod'.
 
 ####findEnvironment( *options* )
-1. Looks in options.**var** for an environment variable.
+1. Looks in options.**var** for the name of an environment variable.
 2. If the environment variable exists, uses its value as the key and exits
 3. Looks in options.**path** for a file path, or an array of file paths.
 4. Looks for a file at each path, in order.
 5. If the file exists, uses its contents as the key and exits
 6. Looks in options.**default** for a value.
 7. If it is set, uses its value as the key and exits
-8. If no environment key is found, returns false, and default behvior continues as though no environment were set
+8. If no environment key is found, returns false, and the *pony-config* continues as though no environment were set
 
 If options.**debug**=true, the search will be logged to console.log
 

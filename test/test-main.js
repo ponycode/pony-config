@@ -287,3 +287,23 @@ describe('useCommandLine empty arguments', function() {
     });
 });
 
+describe('parseCommandlineArguments empty arguments', function() {
+
+    it('parseCommandlineArguments', function(){
+        config.setOptions( { customCommandlineArguments : '' });
+        config.parseCommandlineArguments( { path: 'version', options : 'v' } );
+        var version = config.getCommandlineValue('version');
+        assert.equal( undefined, version, 'should be unset');
+    });
+});
+
+describe('parseCommandlineArguments with value', function() {
+
+	it('getCommandlineValue', function(){
+		config.setOptions( { customCommandlineArguments : '-f filename -v version -ab' });
+		config.parseCommandlineArguments( { path: 'version', options : 'v' } );
+		var version = config.getCommandlineValue('version');
+		assert.equal( "version", version, 'should set');
+	});
+});
+
