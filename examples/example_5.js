@@ -8,7 +8,7 @@ function dynamicConfig(){
 		// Construct config values from other config values
 		zipLookupUrl: 'http://zipsearch/' + config.get('zip'),
 		versionString: 'You are running version ' + config.get('version'),
-		compose_output_file : '~/tmp/' + config.get('outputFilename','output.txt')
+		compose_output_file : '~/tmp/' + config.get('outputFilename','output.txt'),
 
 		// Use command line arguments to control values
 		exclusionSet : ( config.get('exclusion') ) ? ['a','b','c','d' ] : [],
@@ -25,7 +25,8 @@ config
 		{ path:'exclusion', options:'x' },
 		{ path:'outputFilename', options:'o' }
 	])
+	.set('account.secret_key', 'p&ssw0rd')
 	.useObject( dynamicConfig() )				// build configuration objects from config values
-	.list();
+	.list( { secure: 'account.secret_key' });
 
 console.log('Done.');
