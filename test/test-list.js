@@ -255,3 +255,24 @@ describe('List Value Length', function() {
         expect( out ).toContain('[SET]');
     });
 });
+
+describe('List Secure Value', function() {
+
+    it('should hide secure value and nested keyPaths', function () {
+        config.useObject({
+            string: "string",
+            mapObject: {
+                key_a: "value_a",
+                key_b: "value_b"
+            }
+        });
+
+        config.list( {outputStream: outputStream, noColor: true, secure: ['mapObject']});
+        var out = log.join('/');
+        expect( out ).toContain('string');
+        expect( out ).toContain('mapObject');
+        expect( out ).toContain('****');
+        expect( out ).toNotContain('value_a');
+        expect( out ).toNotContain('value_b');
+    });
+});
