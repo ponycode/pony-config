@@ -45,6 +45,15 @@ var street = config.get('address.street');
 config.set('verified', true);
 ```
 
+**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+
+- [Accessors](#)
+- [Load a Configuration Source](#)
+- [Locking Config Against Changes](#)
+- [Merging Configuration Sources](#)
+- [Run-time Environment Configuration](#)
+- [Debugging](#)
+	
 ---
 # Getting Started
 
@@ -57,12 +66,12 @@ In your main javascript file, load the configuration once, then access it from a
 ## Accessors
 
 Configuration properties are stored in nested objects, accessible through dot paths.
-####get( *path*, *[default value]* )
+###get( *path*, *[default value]* )
 
 ```javascript
 config.get( 'name.first', 'anonymous');
 ```
-####set( *path*, *value* )
+###set( *path*, *value* )
 Configuration properties can be set.  If a property doesn't exist, the path to that property will be constructed as needed
 ```javascript
 config.set( "name.first", "Michael" );      // will create or modify { name : { first : "Michael" } } as needed
@@ -74,7 +83,7 @@ config.set( "name", { first : "Michael" );  // same as above, creating sub-paths
 Configuration sources are loaded via the `use` functions.  As configuration sources are loaded, they replace or extend
 previously loaded values.
 
-####useObject( *object* )
+###useObject( *object* )
 This is useful for creating a default configuration.  The object will be loaded at the root of the configuration.
 
 ```javascript
@@ -88,13 +97,13 @@ config.useObject({
 });
 ```
 
-####useFile( *filepath* )
+###useFile( *filepath* )
 
 Configuration files are JSON files, and their contents are loaded to the root config object.
 If the file doesn't exist it will be ignored.
 
 
-####useEnvironmentVar( *path*, *variable name* )
+###useEnvironmentVar( *path*, *variable name* )
 
 Variables from process.env can be accessed by name, and stored using the dot path.
 If the environmnet variable isn't found, the config is unchanged.
@@ -104,7 +113,7 @@ config.useEnvironmentVar( "settings.server.port", "PORT");
 var port = config.get( "settings,server.port" );
 ```
 
-####useCommandlineArguments( *usageRule* | [*usageRules*] )
+###useCommandlineArguments( *usageRule* | [*usageRules*] )
 
 Configuration values can be loaded from the command line. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and values are added at dot-paths in the configuration. CLI *usageRules* are defined similarly to many commandline processing tools.
 
@@ -183,7 +192,7 @@ Configuration sources that aren't needed for the current environment are ignored
 
 File Determinants are text files containing a string that will be the key.  For example, a file named ".env-file' may contain the string 'prod'.
 
-####findEnvironment( *options* )
+###findEnvironment( *options* )
 1. Looks in options.**var** for the name of an environment variable.
 2. If the environment variable exists, uses its value as the key and exits
 3. Looks in options.**path** for a file path, or an array of file paths.
@@ -204,7 +213,7 @@ config.findEnvironment( { paths:['~/.env', './env-file'], env: 'ENVIRONMENT', de
 
 ### Declare Which Configurations to Apply
 
-####when( *key* | *[keys]* )
+###when( *key* | *[keys]* )
 Use the *when* clause to indicate which environments should load the source.  In any other environment, the source will be ignored. If no **when** clause is used, the source will be loaded in every environment.  A **when** clause is in effect until a **use** method is applied.
 
 ```javascript
@@ -212,33 +221,34 @@ config.when('prod').useFile('productionConfig.json');
 config.when(['prod','stage']).useObject({ database : 'mongodb' });
 ```
 
-####always()
+###always()
 Always load the configuration source.  This is the default, but it is sometimes helpful to be explicit.
 
 ```javascript
 config.always().useFile( 'common.json' });
 ```
 
-####useEnvironment( *key* )
+###useEnvironment( *key* )
 If you have another way to determine your run-time environment, you can set the environment key directly.  You must set the environment **before** calling any *use* configuration functions.
 
 ```javascript
 config.useEnvironment('prod');
 ```
 
-####getEnvironment()
+###getEnvironment()
 Returns the current environment key.  Returns ```false``` is no environment key has been set.
 
 ---
 
 ## Debugging
-####list( options )
+###list( options )
 
 options are:
     noColor = true | false            turns on color logging (default is false)
     maxListDepth                      number of levels of config to list (default is 8, minimum 0)
     maxListValueLength                length of values to output, truncated if longer (default is 80)
     outputStream                      an object to be called instead of console.log for the output
+    o.secure						  array of keyPaths.  values at each keyPaths will be logged as "****"
 
 Outputs the current configuration, including the final configuration source of each key value.
 This is extremely useful for debugging configuration merges from multiple sources.
@@ -256,10 +266,10 @@ The output looks like:
     |--zip-state : 49013-CA  [SET]
 ```
 
-####reset()
+###reset()
 Used in tests, reset clears the Config for reusing an object
 
-####setOptions( o );
+###setOptions( o );
 Turns on additional logging. Useful for tracing the loading of configuration files and environment search.
 
     o.debug = true | false              turns on logging (default is false)
@@ -274,15 +284,15 @@ Turns on additional logging. Useful for tracing the loading of configuration fil
 - [minimist](https://www.npmjs.com/package/minimist) for command line argument parsing because it does exactly one thing and does it well.
 - [fs-coalesce](https://www.npmjs.com/package/fs-coalesce) to search file paths. This module (also by [ponycode](https://www.npmjs.com/~ponycode)) extends the file path syntax to include '~', and automatically matches on the first extant file in an array of paths.
 
-#### Tests
+### Tests
 
 ```npm test``` or ```grunt test```
 
-#### Test Coverage (via istanbul.js)
+### Test Coverage (via istanbul.js)
 Statements   : 94.83% ( 330/348 )
 Branches     : 83.94% ( 162/193 )
 Functions    : 100% ( 41/41 )
 Lines        : 97.46% ( 307/315 )
 
-#### License
+### License
 Copyright (c) 2014 PonyCode Corporation Licensed under the MIT license.
