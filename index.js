@@ -17,6 +17,7 @@
     // ----------------------------
     var fs = require('fs');
     var _ = require('lodash');
+	var fsCoalesce = require('fs-coalesce');
 
     // ----------------------------
     // Local dependencies
@@ -251,8 +252,12 @@
     function _loadAndApplyConfigFile( configFileName ){
         var configFileData = false;
 
+	    var configFileNameArray = arrayWrap.wrap( configFileName );
+	    var configFileContents = fsCoalesce.readFirstFileToExistSync( configFileNameArray );
+	    
+	    if( !configFileContents ) return;
+	    
         try{
-            var configFileContents = fs.readFileSync( configFileName, { 'encoding' : 'utf8' } );
             configFileData = JSON.parse( configFileContents );
             if( _options.debug ) console.log('CONFIG: [' + _environment + '] Loaded config from file:', configFileName );
         } catch( error ){
