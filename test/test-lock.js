@@ -25,6 +25,27 @@ function getInitialObject(){
     };
 }
 
+describe('Lock makes data objects immutable', function(){
+
+    it('should not change under set', function(){
+        var instance = getInitialObject();
+
+        config.useObject( instance );
+        config.lock( false );
+
+        instance.mapObject.key_a = "new value";
+        assert.deepEqual( config.get('mapObject.key_a'), "value_a" );
+        
+        var subObject = config.get("mapObject");
+        subObject.key_a = "new value";
+        assert.deepEqual( config.get('mapObject.key_a'), "value_a" );
+
+        var subObject = config.set("mapObject.key_a", "new value");
+        assert.deepEqual( config.get('mapObject.key_a'), "value_a" );
+    });
+    
+});
+
 describe('Lock guards use methods', function(){
 
     it('should not change under calls to useObject', function(){

@@ -58,6 +58,7 @@
 		if( _options.debug ){
 			console.log("CONFIG: Locked");
 		}
+        _config.lock();
 	}
 	
     // ----------------------------
