@@ -164,9 +164,9 @@
     function _useCommandLineArguments( usageRules ){
 	    if( _shouldApplyConfig( _whenEnvironments ) ){
 
+			usageRules = _santizedUsageRules( usageRules );
 			_parseCommandlineArguments( usageRules );
 
-            usageRules = arrayWrap.wrap( usageRules );
             for( var i=0; i < usageRules.length; i++ ){
                 var value = _getCommandlineValue( usageRules[i].path );
                 if( value !== undefined ){
@@ -283,7 +283,22 @@
 		return _interpreter.values[ configKeyPath ];
 	}
 
-    // ----------------------------
+	// ----------------------------
+	// Sanitize - and -- from usage rules
+	// ----------------------------
+	function _santizedUsageRules( usageRules ){
+		usageRules = arrayWrap.wrap( usageRules );
+		for( var i=0; i < usageRules.length; i++ ){
+			var options = arrayWrap.wrap( usageRules[i].options );
+			for( var j=0; j < options.length; j++ ){
+				options[j] = options[j].split('-').join('');		// remove all dashes
+			}
+			usageRules[i].options = options;
+		}
+		return usageRules;
+	}
+
+	// ----------------------------
     // Expose public functions
     // ----------------------------
     exports.setOptions = _setOptions;

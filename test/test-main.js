@@ -263,7 +263,7 @@ describe('useCommandLine', function(){
         config.useCommandLineArguments(
             [
                 { path: 'version', options : 'v' },
-                { path: 'filename', options : ['f', 'file'] },
+                { path: 'filename', options : ['-f', '--file'] },
                 { path: 'boolean.a', options : 'a' },
                 { path: 'boolean.b', options : 'b' },
                 { path: 'boolean.c', options : 'c' }
