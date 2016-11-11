@@ -26,7 +26,7 @@ config
 		{ path:'outputFilename', options:'o' }
 	])
 	.set('account.secret_key', 'p&ssw0rd')
-	.useObject( dynamicConfig() )				// build configuration objects from config values
+	.useObject( dynamicConfig(), "Dynamic" )				// build configuration objects from config values
 	.list( { secure: 'account.secret_key' });
 
 console.log('Done.');

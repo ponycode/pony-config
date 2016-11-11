@@ -134,9 +134,18 @@
     // USE Clauses - Configuration sources
     // ----------------------------
 
+	function _keySourceHintFrom( method, source, environment ){
+		var hints = [];
+		if( method ) hints.push( method );
+		if( source ) hints.push( source );
+		if( environment ) hints.push( "WHEN " + environment );
+
+		return hints.join(' ');
+	}
 
 
-    // ----------------------------
+
+	// ----------------------------
     // Set configuration from a file
     // ----------------------------
     function _useFile( configFileName ){
@@ -152,7 +161,7 @@
     // ----------------------------
     function _useEnvironmentVar( key, envVariableName ){
 	    if( _shouldApplyConfig( _whenEnvironments ) && process.env[ envVariableName ] !== undefined ){
-            _config.set( key, process.env[ envVariableName ]);
+            _config.set( key, process.env[ envVariableName ], _keySourceHintFrom( 'USE-ENVIRONMENT', envVariableName, _whenEnvironments) );
         }
         _whenEnvironments = false;
         return this;
@@ -170,7 +179,7 @@
             for( var i=0; i < usageRules.length; i++ ){
                 var value = _getCommandlineValue( usageRules[i].path );
                 if( value !== undefined ){
-                    _config.set( usageRules[i].path, value, 'USE-COMMAND-LINE:' + usageRules[i].options );
+                    _config.set( usageRules[i].path, value, _keySourceHintFrom( 'USE-COMMAND-LINE', usageRules[i].options, _whenEnvironments) );
                 }
             }
         }
@@ -187,13 +196,12 @@
 		return this;
 	}
 
-
 	// ----------------------------
     // Set configuration using an object
     // ----------------------------
-    function _useObject( configData ){
+    function _useObject( configData, optionalHint ){
 	    if( _shouldApplyConfig( _whenEnvironments ) ){
-            _config.set( '.', configData, 'USE-OBJECT' );
+            _config.set( '.', configData, _keySourceHintFrom( 'USE-OBJECT', optionalHint, _whenEnvironments) );
         }
         _whenEnvironments = false;
         return this;
@@ -223,13 +231,13 @@
     // ----------------------------
     // Set configuration using an dot-path key, eg. (tree.height, 25)
     // ----------------------------
-    function _set( configKeyPath, configValue ){
+    function _set( configKeyPath, configValue, optionalHint ){
         if( _locked ){
             if( _options.exceptionOnLocked ) throw Error( 'CONFIG: Cannot modify config after locking' );
             else console.error('CONFIG: Cannot modify config after locking' );
             return false;
         }
-        _config.set( configKeyPath, configValue, 'SET' );
+        _config.set( configKeyPath, configValue, _keySourceHintFrom('SET', optionalHint, _whenEnvironments ));
         return this;
     }
 
