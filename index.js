@@ -68,6 +68,7 @@
     //  cloneWhenLocked - return clones of all objects to enforce lock
     //  noColor - no color in list output
     //  customCommandlineArguments - command line option string to use instead of process.args
+	//
     // ----------------------------
     function _setOptions( options ){
         _options = options || {};
@@ -81,10 +82,12 @@
 
     function _findEnvironment( search ){
         _environment = env.search( search );
-        return this;
+		if( !_options.caseSensitiveEnvironments ) _environment = _environment.toUpperCase();
+		return this;
     }
 
     function _useEnvironment( environment ){
+    	if( !_options.caseSensitiveEnvironments ) environment = environment.toUpperCase();
         _environment = environment;
         return this;
     }
@@ -105,7 +108,8 @@
 
         for( var i = 0; i < environments.length; i++){
             var env = environments[i];
-            if( env === _environment ){
+			if( !_options.caseSensitiveEnvironments ) env = env.toUpperCase();
+			if( env === _environment ){
                 return true;
             }
         }
@@ -117,7 +121,8 @@
     // When Clause - use to set environment context for useX commands
     // ----------------------------
     function _when( environments ){
-        _whenEnvironments = environments;
+        _whenEnvironments = arrayWrap.wrap( environments );
+		if( !_options.caseSensitiveEnvironments ) _whenEnvironments = _.map( _whenEnvironments, function( e ){ return e.toUpperCase() });
         return this;
     }
 
@@ -276,7 +281,7 @@
         }
 
         if( configFileData ){
-            _config.set( '.', configFileData, 'USE-FILE:' + configFileName );
+            _config.set( '.', configFileData, _keySourceHintFrom( 'USE-FILE', configFileName, _whenEnvironments ));
         }
     }
 

@@ -43,6 +43,20 @@ describe('List smoketest', function(){
 
 describe('List header', function(){
     it('should return log header', function(){
+        config.findEnvironment( { default: 'TEST' } );
+        config.lock();
+        config.list( { outputStream : outputStream, noColor : true });
+        var out = log.join('/');
+        expect( out).toContain('CONFIG');
+        expect( out).toContain('[TEST]');
+        expect( out).toContain('[LOCKED]');
+    });
+
+});
+
+describe('Case sensitive List header', function(){
+    it('should return log header', function(){
+        config.setOptions({ caseSensitiveEnvironments: true });
         config.findEnvironment( { default: 'test' } );
         config.lock();
         config.list( { outputStream : outputStream, noColor : true });
@@ -53,6 +67,7 @@ describe('List header', function(){
     });
 
 });
+
 
 describe('List Properties', function(){
 

@@ -155,63 +155,74 @@ describe('useEnvironmentVar', function(){
 //-----------
 
 describe('findEnvironment', function(){
-
     it('search environment, default', function(){
+        config.setOptions( { caseSensitiveEnvironments: true} );
         config.findEnvironment( { default: 'Default Environment' } );
         assert.equal( 'Default Environment', config.getEnvironment());
     });
 
     it('search environment, missing file', function(){
+        config.setOptions( { caseSensitiveEnvironments: true} );
         config.findEnvironment( { paths: "test/data/missing-file", default: 'Default Environment' } );
         assert.equal( 'Default Environment', config.getEnvironment());
     });
 
     it('search environment, single file', function(){
+        config.setOptions( { caseSensitiveEnvironments: true} );
         config.findEnvironment( { paths: "./test/data/env-file", default: 'Default Environment' } );
         assert.equal( 'Test File Environment', config.getEnvironment());
     });
 
     it('search environment, search file paths, one path', function(){
+        config.setOptions( { caseSensitiveEnvironments: true} );
         config.findEnvironment( { paths: ["test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'Test File Environment', config.getEnvironment());
     });
 
     it('search environment, search file paths, multiple paths', function(){
+        config.setOptions( { caseSensitiveEnvironments: true} );
         config.findEnvironment( { paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'Test File Environment', config.getEnvironment());
     });
 
     it('search environment, env var not found', function(){
+        config.setOptions( { caseSensitiveEnvironments: true} );
         config.findEnvironment( { env: "PONYCONFIG_ENV_MISSING", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'Test File Environment', config.getEnvironment());
     });
 
     it('search environment, env var used', function(){
+        config.setOptions( { caseSensitiveEnvironments: true} );
         config.findEnvironment( { env: "PONYCONFIG_ENV", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'ENVVAR_ENVIRONMENT', config.getEnvironment());
     });
 
     it('search environment, env var used, debug true', function(){
+        config.setOptions( { caseSensitiveEnvironments: true} );
         config.findEnvironment( { debug: true, env: "PONYCONFIG_ENV", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'ENVVAR_ENVIRONMENT', config.getEnvironment());
     });
 
     it('search environment, single file, debug true', function(){
+        config.setOptions( { caseSensitiveEnvironments: true} );
         config.findEnvironment( { debug: true, paths: "./test/data/env-file", default: 'Default Environment' } );
         assert.equal( 'Test File Environment', config.getEnvironment());
     });
 
     it('search environment, empty options', function(){
+        config.setOptions( { caseSensitiveEnvironments: true} );
         config.findEnvironment( {} );
         assert.equal( false, config.getEnvironment());
     });
 
     it('search environment, empty options, debug true', function(){
+        config.setOptions( { caseSensitiveEnvironments: true} );
         config.findEnvironment( { debug: true } );
         assert.equal( false, config.getEnvironment());
     });
 
     it('search environment, env var not found, debug true', function(){
+        config.setOptions( { caseSensitiveEnvironments: true} );
         config.findEnvironment( { debug: true, env: "PONYCONFIG_ENV_MISSING", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'Test File Environment', config.getEnvironment());
     });
@@ -224,12 +235,14 @@ describe('useEnvironment', function(){
     });
 
     it('set environment with a string', function(){
+        config.setOptions( { caseSensitiveEnvironments: true} );
         config.useEnvironment('Test Environment');
         assert.equal( 'Test Environment', config.getEnvironment());
     });
 
     it('set environment with a string, when switches configuration', function(){
-        config.useEnvironment('Test Environment')
+        config.setOptions( { caseSensitiveEnvironments: true} );
+        config.useEnvironment('Test Environment');
         config.when('Wrong Environment').useObject( { wrong : true } );
         config.when('Test Environment').useObject( { test : true } );
         assert.equal( undefined, config.get('wrong'), 'should not set "wrong"');
@@ -237,13 +250,15 @@ describe('useEnvironment', function(){
     });
 
     it('set environment with a string, not clause -> is used', function(){
-        config.useEnvironment('Test Environment')
+        config.setOptions( { caseSensitiveEnvironments: true} );
+        config.useEnvironment('Test Environment');
         config.useObject( { always : true } );
         assert.equal( true, config.get('always'), 'should set "always"');
     });
 
     it('set environment with a string, always is used', function(){
-        config.useEnvironment('Test Environment')
+        config.setOptions( { caseSensitiveEnvironments: true} );
+        config.useEnvironment('Test Environment');
         config.always().useObject( { always : true } );
         assert.equal( true, config.get('always'), 'should set "always"');
     });

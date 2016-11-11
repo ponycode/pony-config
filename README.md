@@ -44,15 +44,6 @@ var name = config.get('name');
 var street = config.get('address.street');
 config.set('verified', true);
 ```
-
-**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
-
-- [Accessors](#)
-- [Load a Configuration Source](#)
-- [Locking Config Against Changes](#)
-- [Merging Configuration Sources](#)
-- [Run-time Environment Configuration](#)
-- [Debugging](#)
 	
 ---
 # Getting Started
@@ -213,6 +204,7 @@ config.findEnvironment( { paths:['~/.env', './env-file'], env: 'ENVIRONMENT', de
 
 ### Declare Which Configurations to Apply
 
+*NOTE:* Environments are case insensitive unless 
 ###when( *key* | *[keys]* )
 Use the *when* clause to indicate which environments should load the source.  In any other environment, the source will be ignored. If no **when** clause is used, the source will be loaded in every environment.  A **when** clause is in effect until a **use** method is applied.
 
@@ -249,6 +241,8 @@ options are:
     maxListValueLength                length of values to output, truncated if longer (default is 80)
     outputStream                      an object to be called instead of console.log for the output
     o.secure						  array of keyPaths.  values at each keyPaths will be logged as "****"
+    caseSensitiveEnvironments         compare environments with case sensitivity, thus dev != 'DEV', default is false
+                                      *note* in pony-config 1.0.x, the default behavior was case sensitivity
 
 Outputs the current configuration, including the final configuration source of each key value.
 This is extremely useful for debugging configuration merges from multiple sources.
