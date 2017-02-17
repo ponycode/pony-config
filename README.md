@@ -42,16 +42,40 @@ var street = config.get('address.street');
 config.set('verified', true);
 ```
 	
-# Table of Contents
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-* [Gettings Started](#getting-started)
-* [Accessors](#accessors)
-* [Load a Configuration Source](#load-a-configuration-source)
-    * [useObject](#useobject)
-    * [useFile](#usefile)
-    * [useEnvironment](#useenvironment)
-    * [useCommandlineArguments](#usecommandlinearguments)
-* [Locking Config Against Changes](#locking-config-against-changes)
+
+- [Getting Started](#getting-started)
+- [Accessors](#accessors)
+  - [get( *path*, *[default value]* )](#get-path-default-value-)
+  - [set( *path*, *value* )](#set-path-value-)
+- [Load a Configuration Source](#load-a-configuration-source)
+  - [useObject( *object* )](#useobject-object-)
+  - [useFile( *filepath* )](#usefile-filepath-)
+  - [useEnvironmentVar( *path*, *variable name* )](#useenvironmentvar-path-variable-name-)
+  - [useCommandLineArguments( *usageRule* | [*usageRules*] )](#usecommandlinearguments-usagerule--usagerules-)
+- [Locking Config Against Changes](#locking-config-against-changes)
+- [Merging Configuration Sources](#merging-configuration-sources)
+- [Run-time Environment Configuration](#run-time-environment-configuration)
+  - [Determining the Run-time Environment](#determining-the-run-time-environment)
+  - [findEnvironment( *options* )](#findenvironment-options-)
+  - [Declare Which Configurations to Apply](#declare-which-configurations-to-apply)
+  - [when( *key* | *[keys]* )](#when-key--keys-)
+  - [always()](#always)
+  - [useEnvironment( *key* )](#useenvironment-key-)
+  - [isEnvironment( *environment* )](#isenvironment-environment-)
+  - [getEnvironment()](#getenvironment)
+- [Debugging](#debugging)
+  - [list( options )](#list-options-)
+  - [reset()](#reset)
+  - [setOptions( o );](#setoptions-o-)
+  - [See Also](#see-also)
+  - [Tests](#tests)
+  - [Test Coverage (via istanbul.js)](#test-coverage-via-istanbuljs)
+  - [License](#license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Getting Started
 
@@ -64,12 +88,12 @@ In your main javascript file, load the configuration once, then access it from a
 ## Accessors
 
 Configuration properties are stored in nested objects, accessible through dot paths.
-###get( *path*, *[default value]* )
+### get( *path*, *[default value]* )
 
 ```javascript
 config.get( 'name.first', 'anonymous');
 ```
-###set( *path*, *value* )
+### set( *path*, *value* )
 Configuration properties can be set.  If a property doesn't exist, the path to that property will be constructed as needed
 ```javascript
 config.set( "name.first", "Michael" );      // will create or modify { name : { first : "Michael" } } as needed
@@ -81,7 +105,7 @@ config.set( "name", { first : "Michael" );  // same as above, creating sub-paths
 Configuration sources are loaded via the `use` functions.  As configuration sources are loaded, they replace or extend
 previously loaded values.
 
-###useObject( *object* )
+### useObject( *object* )
 This is useful for creating a default configuration.  The object will be loaded at the root of the configuration.
 
 ```javascript
@@ -95,13 +119,13 @@ config.useObject({
 });
 ```
 
-###useFile( *filepath* )
+### useFile( *filepath* )
 
 Configuration files are JSON files, and their contents are loaded to the root config object.
 If the file doesn't exist it will be ignored.
 
 
-###useEnvironmentVar( *path*, *variable name* )
+### useEnvironmentVar( *path*, *variable name* )
 
 Variables from process.env can be accessed by name, and stored using the dot path.
 If the environmnet variable isn't found, the config is unchanged.
@@ -111,7 +135,7 @@ config.useEnvironmentVar( "settings.server.port", "PORT");
 var port = config.get( "settings,server.port" );
 ```
 
-###useCommandLineArguments( *usageRule* | [*usageRules*] )
+### useCommandLineArguments( *usageRule* | [*usageRules*] )
 
 Configuration values can be loaded from the command line. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and values are added at dot-paths in the configuration. CLI *usageRules* are defined similarly to many commandline processing tools.
 
@@ -150,8 +174,6 @@ config objects (with the exception of functions, which are returned without clon
 
 Cloning comes with the cost of memory and cloning-time for each request, so consider the real risk and likelihood of mutations in your code before using *cloneWhenLocked*.
 
----
-
 ## Merging Configuration Sources
 Each configuration source is loaded at the config root. When another node is added
 with an identical key path, it is merged with the previous node at that location. You can apply increasingly specific configurations at any depth
@@ -174,7 +196,6 @@ Results in
 }
 ```
 
----
 
 ## Run-time Environment Configuration
 
@@ -190,7 +211,7 @@ Configuration sources that aren't needed for the current environment are ignored
 
 File Determinants are text files containing a string that will be the key.  For example, a file named ".env-file' may contain the string 'prod'.
 
-###findEnvironment( *options* )
+### findEnvironment( *options* )
 1. Looks in options.**var** for the name of an environment variable.
 2. If the environment variable exists, uses its value as the key and exits
 3. Looks in options.**path** for a file path, or an array of file paths.
@@ -211,8 +232,9 @@ config.findEnvironment( { paths:['~/.env', './env-file'], env: 'ENVIRONMENT', de
 
 ### Declare Which Configurations to Apply
 
-*NOTE:* Environments are case insensitive unless 
-###when( *key* | *[keys]* )
+*NOTE:* Environments are case insensitive unless `setOptions( { caseSensitiveEnvironments: false } )` is called.
+
+### when( *key* | *[keys]* )
 Use the *when* clause to indicate which environments should load the source.  In any other environment, the source will be ignored. If no **when** clause is used, the source will be loaded in every environment.  A **when** clause is in effect until a **use** method is applied.
 
 ```javascript
@@ -220,27 +242,30 @@ config.when('prod').useFile('productionConfig.json');
 config.when(['prod','stage']).useObject({ database : 'mongodb' });
 ```
 
-###always()
+### always()
 Always load the configuration source.  This is the default, but it is sometimes helpful to be explicit.
 
 ```javascript
 config.always().useFile( 'common.json' });
 ```
 
-###useEnvironment( *key* )
+### useEnvironment( *key* )
 If you have another way to determine your run-time environment, you can set the environment key directly.  You must set the environment **before** calling any *use* configuration functions.
 
 ```javascript
 config.useEnvironment('prod');
 ```
 
-###getEnvironment()
+### isEnvironment( *environment* )
+Use to test the run-time environment that was resolved by pony-config. Takes into account case sensitivity options. The default
+is case-insensitivity.
+
+### getEnvironment()
 Returns the current environment key.  Returns ```false``` is no environment key has been set.
 
----
 
 ## Debugging
-###list( options )
+### list( options )
 
 options are:
     noColor = true | false            turns on color logging (default is false)
@@ -268,10 +293,10 @@ The output looks like:
     |--zip-state : 49013-CA  [SET]
 ```
 
-###reset()
+### reset()
 Used in tests, reset clears the Config for reusing an object
 
-###setOptions( o );
+### setOptions( o );
 Turns on additional logging. Useful for tracing the loading of configuration files and environment search.
 
     o.debug = true | false              turns on logging (default is false)
@@ -281,7 +306,7 @@ Turns on additional logging. Useful for tracing the loading of configuration fil
     o.customCommandlineArguments        argument string to use instead of process.argv (eg, "-v 1.04 -print -out file")
 
 
-###See Also
+### See Also
 **pony-config** uses
 - [minimist](https://www.npmjs.com/package/minimist) for command line argument parsing because it does exactly one thing and does it well.
 - [fs-coalesce](https://www.npmjs.com/package/fs-coalesce) to search file paths. This module (also by [ponycode](https://www.npmjs.com/~ponycode)) extends the file path syntax to include '~', and automatically matches on the first extant file in an array of paths.

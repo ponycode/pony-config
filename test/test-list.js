@@ -271,7 +271,7 @@ describe('List Value Length', function() {
     });
 });
 
-describe('List Secure Value', function() {
+describe.only('List Secure Value', function() {
 
     it('should hide secure value and nested keyPaths', function () {
         config.useObject({
@@ -290,6 +290,65 @@ describe('List Secure Value', function() {
         expect( out ).toNotContain('value_a');
         expect( out ).toNotContain('value_b');
     });
+
+    it('should hide secure value inside map with keyPath', function(){
+		config.useObject({
+			string: "string",
+			mapObject: {
+				key_a: "value_a",
+				key_b: "value_b"
+			},
+			arrayObject: [
+				{ key_c: "value_c" },
+				{ key_d: "value_d" }
+			]
+		});
+
+		config.list( {outputStream: outputStream, noColor: true, secure: ['mapObject.key_a']});
+		var out = log.join('/');
+		expect( out ).toContain('string');
+		expect( out ).toContain('mapObject');
+		expect( out ).toContain('key_a');
+		expect( out ).toContain('key_b');
+		expect( out ).toContain('****');
+		expect( out ).toNotContain('value_a');
+		expect( out ).toContain('value_b');
+		expect( out ).toContain('arrayObject');
+		expect( out ).toContain('key_c');
+		expect( out ).toContain('key_d');
+		expect( out ).toContain('value_c');
+		expect( out ).toContain('value_d');
+	});
+
+	it('should hide secure value inside array with keyPath', function(){
+		config.useObject({
+			string: "string",
+			mapObject: {
+				key_a: "value_a",
+				key_b: "value_b"
+			},
+			arrayObject: [
+				{ key_c: "value_c" },	// index 0
+				{ key_d: "value_d" }	// index 1
+			]
+		});
+
+		config.list( {outputStream: outputStream, noColor: true, secure: ['arrayObject.0']});
+		var out = log.join('/');
+		expect( out ).toContain('string');
+		expect( out ).toContain('mapObject');
+		expect( out ).toContain('key_a');
+		expect( out ).toContain('key_b');
+		expect( out ).toContain('value_a');
+		expect( out ).toContain('value_b');
+		expect( out ).toContain('arrayObject');
+		expect( out ).toNotContain('key_c');
+		expect( out ).toContain('key_d');
+		expect( out ).toNotContain('value_c');
+		expect( out ).toContain('value_d');
+		expect( out ).toContain('****');
+	});
+
 });
 
 describe('List formatter option', function() {
