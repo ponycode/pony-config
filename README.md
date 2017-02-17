@@ -59,13 +59,13 @@ config.set('verified', true);
 - [Merging Configuration Sources](#merging-configuration-sources)
 - [Run-time Environment Configuration](#run-time-environment-configuration)
   - [Determining the Run-time Environment](#determining-the-run-time-environment)
-  - [findEnvironment( *options* )](#findenvironment-options-)
+    - [findEnvironment( *options* )](#findenvironment-options-)
+    - [useEnvironment( *key* )](#useenvironment-key-)
+    - [isEnvironment( *environment* )](#isenvironment-environment-)
+    - [getEnvironment()](#getenvironment)
   - [Declare Which Configurations to Apply](#declare-which-configurations-to-apply)
-  - [when( *key* | *[keys]* )](#when-key--keys-)
-  - [always()](#always)
-  - [useEnvironment( *key* )](#useenvironment-key-)
-  - [isEnvironment( *environment* )](#isenvironment-environment-)
-  - [getEnvironment()](#getenvironment)
+    - [when( *key* | *[keys]* )](#when-key--keys-)
+    - [always()](#always)
 - [Debugging](#debugging)
   - [list( options )](#list-options-)
   - [reset()](#reset)
@@ -211,7 +211,7 @@ Configuration sources that aren't needed for the current environment are ignored
 
 File Determinants are text files containing a string that will be the key.  For example, a file named ".env-file' may contain the string 'prod'.
 
-### findEnvironment( *options* )
+#### findEnvironment( *options* )
 1. Looks in options.**var** for the name of an environment variable.
 2. If the environment variable exists, uses its value as the key and exits
 3. Looks in options.**path** for a file path, or an array of file paths.
@@ -230,11 +230,26 @@ Example
 config.findEnvironment( { paths:['~/.env', './env-file'], env: 'ENVIRONMENT', default:'prod');
 ```
 
+#### useEnvironment( *key* )
+Alternatively, if you have another way to determine your run-time environment, you can simply set the environment key directly.  You must set the environment **before** calling any *use* configuration functions.
+
+```javascript
+config.useEnvironment('prod');
+```
+
+#### isEnvironment( *environment* )
+Use to test the run-time environment that was resolved by pony-config. Takes into account case sensitivity options. The default
+is case-insensitivity.
+
+#### getEnvironment()
+Returns the current environment key.  Returns ```false``` is no environment key has been set.
+
+
 ### Declare Which Configurations to Apply
 
 *NOTE:* Environments are case insensitive unless `setOptions( { caseSensitiveEnvironments: false } )` is called.
 
-### when( *key* | *[keys]* )
+#### when( *key* | *[keys]* )
 Use the *when* clause to indicate which environments should load the source.  In any other environment, the source will be ignored. If no **when** clause is used, the source will be loaded in every environment.  A **when** clause is in effect until a **use** method is applied.
 
 ```javascript
@@ -242,29 +257,16 @@ config.when('prod').useFile('productionConfig.json');
 config.when(['prod','stage']).useObject({ database : 'mongodb' });
 ```
 
-### always()
+#### always()
 Always load the configuration source.  This is the default, but it is sometimes helpful to be explicit.
 
 ```javascript
 config.always().useFile( 'common.json' });
 ```
 
-### useEnvironment( *key* )
-If you have another way to determine your run-time environment, you can set the environment key directly.  You must set the environment **before** calling any *use* configuration functions.
-
-```javascript
-config.useEnvironment('prod');
-```
-
-### isEnvironment( *environment* )
-Use to test the run-time environment that was resolved by pony-config. Takes into account case sensitivity options. The default
-is case-insensitivity.
-
-### getEnvironment()
-Returns the current environment key.  Returns ```false``` is no environment key has been set.
-
 
 ## Debugging
+
 ### list( options )
 
 options are:
