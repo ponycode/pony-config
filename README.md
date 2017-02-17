@@ -1,29 +1,26 @@
-#pony-config
+# pony-config
 
-A very small config module
+Versatile, Predictable Configuration
 
----
-
-## Versatile, Predictable Configuration
-### Configuration can be loaded from several sources
+#### Configuration can be loaded from several sources
 - JSON files
 - Javascript Objects
 - Environment Variables
 - Commandline Arguments
 - Programmatically
 
-### Sources are merged predictably
+#### Sources are merged predictably
 - Later values replace earlier values
 - New properties can extend objects
 - Objects are merged recursively
 - Powerful debug trace of each config value's source
 
-This makes it easy to set defaults, then load common configuration, and finally override with specific values.
+Makes it easy to set defaults, then load common configuration, and finally override with specific values.
 
-### Objects are accessed through dot paths
+#### Objects are accessed through dot paths
 Both `get` and `set` methods support dot paths, for example ```get('name.first')```
 
-### Selectable Configuration for Run-Time Environment
+#### Selectable Configuration for Run-Time Environment
 
 Configuration can be selected at run-time for each of your environments, for example Production, Stage, Dev, Dev-Josh, Dev-Scott.
 The run-time environment is determined by searching file paths and environment variables.
@@ -33,7 +30,7 @@ For example,
 config.findEnvironment( { paths:['./env-file'], env: 'ENVIRONMENT', default:'prod');
 ```
 
-### A Simple Example
+#### A Simple Example
 ```javascript
 var config = require('pony-config');
 
@@ -45,8 +42,18 @@ var street = config.get('address.street');
 config.set('verified', true);
 ```
 	
----
-# Getting Started
+# Table of Contents
+
+* [Gettings Started](#getting-started)
+* [Accessors](#accessors)
+* [Load a Configuration Source](#load-a-configuration-source)
+    * [useObject](#useobject)
+    * [useFile](#usefile)
+    * [useEnvironment](#useenvironment)
+    * [useCommandlineArguments](#usecommandlinearguments)
+* [Locking Config Against Changes](#locking-config-against-changes)
+
+## Getting Started
 
 The config module is a singleton.  Reference it with
 ```javascript
@@ -104,7 +111,7 @@ config.useEnvironmentVar( "settings.server.port", "PORT");
 var port = config.get( "settings,server.port" );
 ```
 
-###useCommandlineArguments( *usageRule* | [*usageRules*] )
+###useCommandLineArguments( *usageRule* | [*usageRules*] )
 
 Configuration values can be loaded from the command line. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and values are added at dot-paths in the configuration. CLI *usageRules* are defined similarly to many commandline processing tools.
 
@@ -117,7 +124,7 @@ then the following will load 'hamster.jpg' at 'outputs.binaryFilename', and true
 funnyprogram -f hamster.jpg -a
 ```
 ```javascript
-config.useCommandlineArguments( [
+config.useCommandLineArguments( [
     { path : "outputs.binaryFilename", options : ["f","file"] },
     { path : "settings.appendMode", options : ["a","appendMode"] },
     { path : "settings.silentMode", options : "s" }
@@ -125,7 +132,7 @@ config.useCommandlineArguments( [
 ```
 
 An alternative way to utilize command line arguments with pony-config is to call ```parseCommandlineArguments( *usageRules* )```, which will interpret the command line arguments
-without committing them to the configuration. Then you can use ```getCommandlineValue( *path* )``` to access the values that were passed on the command line.
+without committing them to the configuration. Then you can use ```getCommandLineValue( *path* )``` to access the values that were passed on the command line.
 
 ## Locking Config Against Changes
 Once the configuration is set, you can lock it against further changes.  Pass *true* to have change attempts throw an exception, or set { 'exceptionOnLocked' : true } in your config options.
@@ -243,6 +250,7 @@ options are:
     o.secure						  array of keyPaths.  values at each keyPaths will be logged as "****"
     caseSensitiveEnvironments         compare environments with case sensitivity, thus dev != 'DEV', default is false
                                       *note* in pony-config 1.0.x, the default behavior was case sensitivity
+    formatter                         optional function taking ( value, keyPath ) and returning value, possibly modified (eg, converted to hex)
 
 Outputs the current configuration, including the final configuration source of each key value.
 This is extremely useful for debugging configuration merges from multiple sources.

@@ -96,6 +96,11 @@
         return _environment;
     }
 
+    function _isEnvironment( environment ){
+		if( !_options.caseSensitiveEnvironments ) return ( environment.toUpperCase() === _environment.toUpperCase());
+		else return ( environment === _environment );
+	}
+
     function _shouldApplyConfig( environments ){
 	    if( _locked ){
 		    if( _options.exceptionOnLocked ) throw Error( 'CONFIG: Cannot modify config after locking' );
@@ -160,6 +165,17 @@
         _whenEnvironments = false;
         return this;
     }
+
+	// ----------------------------
+	// Set configuration by evaluating a function conditional on the when clause
+	// ----------------------------
+	function _useFunction( aFunction ){
+		if( _shouldApplyConfig( _whenEnvironments ) ){
+			aFunction();
+		}
+		_whenEnvironments = false;
+		return this;
+	}
 
     // ----------------------------
     // Set configuration from an OS environment variable
@@ -323,13 +339,19 @@
     exports.useFile = _useFile;
     exports.useObject = _useObject;
     exports.useEnvironmentVar = _useEnvironmentVar;
-    exports.useCommandLineArguments = _useCommandLineArguments;
+	exports.useCommandLineArguments = _useCommandLineArguments;
+	exports.useCommandLineArguments = _useCommandLineArguments;
+	exports.parseCommandLineArguments = _parseCommandlineArguments;
+	exports.getCommandLineValue = _getCommandlineValue;
+	exports.useCommandlineArguments = _useCommandLineArguments;
+	exports.useCommandlineArguments = _useCommandLineArguments;
+	exports.parseCommandlineArguments = _parseCommandlineArguments;
+	exports.getCommandlineValue = _getCommandlineValue;
     exports.get = _get;
     exports.set = _set;
     exports.list = _list;
     exports.reset = _reset;
 	exports.lock = _lock;
-	exports.parseCommandlineArguments = _parseCommandlineArguments;
-	exports.getCommandlineValue = _getCommandlineValue;
-
+	exports.isEnvironment = _isEnvironment;
+	exports.useFunction = _useFunction;
 })();

@@ -265,6 +265,38 @@ describe('useEnvironment', function(){
 
 });
 
+
+describe('isEnvironment', function(){
+
+	it('should match', function(){
+		config.useEnvironment('test');
+		var isEnv = config.isEnvironment('test');
+		assert.equal( isEnv, true );
+	});
+
+	it('should not match', function(){
+		config.useEnvironment('not_test');
+		var isEnv = config.isEnvironment('test');
+		assert.equal( isEnv, false );
+	});
+
+	it('should be case insensitive', function(){
+		config.useEnvironment('testCaseSensiTivE');
+		var isEnv = config.isEnvironment('TESTCASEsensitive');
+		assert.equal( isEnv, true );
+	});
+
+	it('should not be case insensitive', function(){
+		config.setOptions( { caseSensitiveEnvironments: true });
+		config.useEnvironment('testCaseInSensiTivE');
+		var isntEvn = config.isEnvironment('TESTCASEINsensitive');
+		var isEnv = config.isEnvironment('testCaseInSensiTivE');
+		assert.equal( isntEvn, false );
+		assert.equal( isEnv, true );
+	});
+});
+
+
 describe('useCommandLine', function(){
 
     it('one command line argument with value', function(){
@@ -322,3 +354,32 @@ describe('parseCommandlineArguments with value', function() {
 	});
 });
 
+describe('useFunction', function(){
+	it( 'selected function should get executed', function(){
+		var functionOneWasEvaluated = 0;
+		var functionTwoWasEvaluated = 0;
+
+		config.set('functionOneConfigResult', "not called" );
+		config.set('functionTwoConfigResult', "not called" );
+		function functionOne(){
+			config.set('functionOneConfigResult', true );
+			functionOneWasEvaluated++;
+		}
+
+		function functionTwo(){
+			config.set('functionTwoConfigResult', true );
+			functionTwoWasEvaluated++;
+		}
+
+		config.useEnvironment('Test Environment');
+		config.when( 'Wrong Environment' ).useFunction( functionOne );
+		config.when( 'Test Environment' ).useFunction( functionTwo );
+
+		assert.equal( functionOneWasEvaluated, 0 );
+		assert.equal( functionTwoWasEvaluated, 1 );
+
+		assert.equal( "not called", config.get( 'functionOneConfigResult' ) );
+		assert.equal( true, config.get( 'functionTwoConfigResult' ) );
+	} );
+
+});

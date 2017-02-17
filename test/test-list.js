@@ -291,3 +291,41 @@ describe('List Secure Value', function() {
         expect( out ).toNotContain('value_b');
     });
 });
+
+describe('List formatter option', function() {
+
+    it('should output integers as hex', function(){
+        config.useObject({
+            string: "string",
+            mapObject: {
+                key_a: 3.15,
+                key_b: 17
+            }
+        });
+
+		function numberToHexString(d, padding ){
+			var unsignedInt = d >>> 0;
+			var hex = Number(unsignedInt).toString(16).toUpperCase();
+			padding = typeof (padding) === "undefined" || padding === null ? padding = 8 : padding;
+			while (hex.length < padding) {
+				hex = "0" + hex;
+			}
+			return hex;
+		}
+
+		function formatter( value, key ){
+            if( _.isInteger( value )){
+				return numberToHexString( value, 8 );
+            }else{
+            	return value;
+			}
+        }
+
+        config.list( {outputStream: outputStream, noColor: true, formatter: formatter });
+		var out = log.join('/');
+		expect( out ).toContain('string');
+		expect( out ).toContain('mapObject');
+		expect( out ).toContain('3.15');
+		expect( out ).toContain('00000011');
+    })
+});
