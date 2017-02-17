@@ -1,10 +1,11 @@
 {
   "name": "pony-config",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Small configuration loader",
   "main": "index.js",
   "scripts": {
-    "test": "PONYCONFIG_TRUE=1 PONYCONFIG_FALSE=0 PONYCONFIG_ENV=ENVVAR_ENVIRONMENT mocha test"
+    "test": "PONYCONFIG_TRUE=1 PONYCONFIG_FALSE=0 PONYCONFIG_ENV=ENVVAR_ENVIRONMENT mocha test",
+    "cover": "PONYCONFIG_TRUE=1 PONYCONFIG_FALSE=0 PONYCONFIG_ENV=ENVVAR_ENVIRONMENT ./node_modules/istanbul/lib/cli.js cover _mocha -- ./test"
   },
   "repository": {
     "type": "git",
@@ -27,12 +28,13 @@
   },
   "homepage": "https://github.com/ponycode/pony-config",
   "devDependencies": {
+    "expect": "~1.6.0",
     "grunt": "~0.4.5",
     "grunt-contrib-jshint": "^0.11.2",
-    "mocha": "^2.2.5",
-    "expect": "~1.6.0",
+    "grunt-env": "~0.4.4",
     "grunt-mocha-test": "~0.12.7",
-    "grunt-env": "~0.4.4"
+    "istanbul": "^0.4.5",
+    "mocha": "^2.2.5"
   },
   "dependencies": {
     "chalk": "^1.1.3",

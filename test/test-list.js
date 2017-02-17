@@ -271,7 +271,7 @@ describe('List Value Length', function() {
     });
 });
 
-describe.only('List Secure Value', function() {
+describe('List Secure Value', function() {
 
     it('should hide secure value and nested keyPaths', function () {
         config.useObject({

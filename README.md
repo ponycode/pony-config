@@ -2,35 +2,31 @@
 
 Versatile, Predictable Configuration
 
-#### Configuration can be loaded from several sources
+#### Sources are merged predictably
+- Config properites are extended and replaced recursively
+- Powerful debug trace of each config value's source
+- Makes it easy to set defaults, load common configuration, and finally override with environement specific values.
+
+#### Configuration can be loaded from many sources
 - JSON files
 - Javascript Objects
 - Environment Variables
-- Commandline Arguments
+- Command Line Arguments
 - Programmatically
 
-#### Sources are merged predictably
-- Later values replace earlier values
-- New properties can extend objects
-- Objects are merged recursively
-- Powerful debug trace of each config value's source
-
-Makes it easy to set defaults, then load common configuration, and finally override with specific values.
-
-#### Objects are accessed through dot paths
+#### Configuration properties are easily accessed through dot paths
 Both `get` and `set` methods support dot paths, for example ```get('name.first')```
 
-#### Selectable Configuration for Run-Time Environment
+#### Select Configuration for each Run-Time Environment
 
 Configuration can be selected at run-time for each of your environments, for example Production, Stage, Dev, Dev-Josh, Dev-Scott.
 The run-time environment is determined by searching file paths and environment variables.
 
-For example,
 ```javascript
 config.findEnvironment( { paths:['./env-file'], env: 'ENVIRONMENT', default:'prod');
 ```
 
-#### A Simple Example
+## A Simple Example
 ```javascript
 var config = require('pony-config');
 
@@ -42,6 +38,8 @@ var street = config.get('address.street');
 config.set('verified', true);
 ```
 	
+	
+## In This Document
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
@@ -317,11 +315,19 @@ Turns on additional logging. Useful for tracing the loading of configuration fil
 
 ```npm test``` or ```grunt test```
 
-### Test Coverage (via istanbul.js)
-Statements   : 94.83% ( 330/348 )
-Branches     : 83.94% ( 162/193 )
-Functions    : 100% ( 41/41 )
-Lines        : 97.46% ( 307/315 )
+For coverage, run `npm run cover`
 
+### Test Coverage (via istanbul.js)
+
+Statements   : 96% ( 408/425 )
+Branches     : 86.44% ( 204/236 )
+Functions    : 98.08% ( 51/52 )
+Lines        : 98.14% ( 370/377 )
+
+
+
+
+
+-------------------------------------------------------------------------
 ### License
 Copyright (c) 2014 PonyCode Corporation Licensed under the MIT license.
