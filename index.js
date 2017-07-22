@@ -228,25 +228,43 @@
         return this;
     }
 
-    function _sanitizeOptionsParameter( optionsArray ){
-    	if( !_.isArray( optionsArray )) optionsArray = optionsArray.split(",");
-    	return _.map( optionsArray, function(string){
+    function _parseOptionsParameter( options ){
+    	var optionsComponent = options;
+    	var parameterComponent = null;
+
+    	var parameterMatch = options.match(/(^[^\[\<]*)(\[.*\])|(\<.*\>)/);
+    	if( parameterMatch ){
+    		optionsComponent = parameterMatch[1];
+    		parameterComponent = parameterMatch[2];
+		}
+
+		var optionArray = optionsComponent.split(',');
+		optionsArray = _.map( optionArray, function(string){
     		return string.replace(/-+/g, '').trim();
     	});
+
+		return {
+			options: optionsArray,
+			parameter: parameterComponent
+		};
 	}
 
 
     function _cliOption( path, options, description, optionalDefaultValue, optionalParser ){
     	if( path === undefined || options == undefined ) throw new Error("CONFIG: cli option requires path and options parameters" );
+		if( _.isArray( options )) options = options.join(',');
 
 		if( typeof optionalDefaultValue === 'function' && arguments.length === 4 ){
 			optionalParser = optionalDefaultValue;
 			optionalDefaultValue = undefined;
 		}
 
+		var optionsSpec = _parseOptionsParameter( options );
+
 		var usageRule = {
 			path: path,
-			options: _sanitizeOptionsParameter( options ),
+			options: optionsSpec.options,
+			parameter: optionsSpec.parameter,
 			description: description,
 			defaultValue: optionalDefaultValue,
 			parser: optionalParser
@@ -295,7 +313,10 @@
 		console.log("Options:\n");
 		for( var i=0; i < _cliOptions.length; i++ ){
 			var opt = _cliOptions[i];
-			var output = "  " + _rpad( _optionsAsString( opt.options ), 24 );
+			var optionString = _optionsAsString( opt.options );
+			if( opt.parameter ) optionString += " " + opt.parameter;
+
+			var output = "  " + _rpad( optionString, 40 );
 			if( opt.description !== undefined ) output += " " + opt.description;
 			if( opt.defaultValue !== undefined ) output += ", Default=" + opt.defaultValue;
 			console.log( output );
