@@ -9,6 +9,7 @@ config
 .cliOption( 'outputFilename', 'o', 'The output file to write' )
 .cliOption( 'default', 'd', 'Default value to use', 'a-default' )
 .cliOption( 'json', ['j','json'], 'A json file input',  JSON.parse )
+.cliArguments( 'arguments' )
 .cliParse();
 
 if( config.get('help')){

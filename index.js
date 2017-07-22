@@ -38,7 +38,7 @@
     var _whenEnvironments = false;
 	var _interpreter = false;
 	var _cliOptions = [ CLI_OPTION_HELP ];
-
+	var _cliArgumentsPath = false;
 	var _locked = false;
 
     // For Debug and Test - return state to initial, with optional alternative 'command line arguments'
@@ -49,6 +49,7 @@
         _whenEnvironments = false;
 	    _locked = false;
 		_cliOptions = [ CLI_OPTION_HELP ];
+		_cliArgumentsPath = false;
     }
 
 	// ----------------------------
@@ -201,6 +202,8 @@
 			usageRules = _santizedUsageRules( usageRules );
 			_parseCommandlineArguments( usageRules );
 
+			if( _cliArgumentsPath ) _config.set( _cliArgumentsPath, _interpreter.arguments, _keySourceHintFrom( 'USE-COMMAND-LINE' ), _whenEnvironments );
+
             for( var i=0; i < usageRules.length; i++ ){
             	var sourceHint = 'USE-COMMAND-LINE';
                 var value = _getCommandlineValue( usageRules[i].path );
@@ -244,6 +247,11 @@
 
 		_cliOptions.push( usageRule );
 		return this;
+	}
+
+	function _cliArguments( path ){
+    	_cliArgumentsPath = path;
+    	return this;
 	}
 
 	function _cliParse(){
@@ -430,6 +438,7 @@
 	exports.cliOption = _cliOption;
 	exports.cliParse = _cliParse;
 	exports.cliHelp = _cliHelp;
+	exports.cliArguments = _cliArguments;
     exports.get = _get;
     exports.set = _set;
     exports.list = _list;
