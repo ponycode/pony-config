@@ -11,7 +11,9 @@ config
     .findEnvironment( { paths:['./example-env-file'], env: 'ENVIRONMENT', default:'prod', debug: true} )
     .always().useObject( {'organization': 'PonyCode' } )
     .when(['dev']).useFile( 'example-dev-config.json' )
-    .when(['prod','stage']).useFile( 'example-prod-config.json' )
+    .when(['prod','stage'])
+        .useFile( 'example-prod-config.json' )
+        .useObject( { productionKey: 'pkey' })
     .list();
 
 console.log('');

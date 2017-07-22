@@ -228,9 +228,16 @@
         return this;
     }
 
+    function _sanitizeOptionsParameter( optionsArray ){
+    	if( !_.isArray( optionsArray )) optionsArray = optionsArray.split(",");
+    	return _.map( optionsArray, function(string){
+    		return string.replace(/-+/g, '').trim();
+    	});
+	}
+
+
     function _cliOption( path, options, description, optionalDefaultValue, optionalParser ){
     	if( path === undefined || options == undefined ) throw new Error("CONFIG: cli option requires path and options parameters" );
-		var optionsArray = arrayWrap.wrap( options );
 
 		if( typeof optionalDefaultValue === 'function' && arguments.length === 4 ){
 			optionalParser = optionalDefaultValue;
@@ -239,7 +246,7 @@
 
 		var usageRule = {
 			path: path,
-			options: optionsArray,
+			options: _sanitizeOptionsParameter( options ),
 			description: description,
 			defaultValue: optionalDefaultValue,
 			parser: optionalParser

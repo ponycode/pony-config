@@ -1,11 +1,11 @@
 {
   "name": "pony-config",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "description": "Small configuration loader",
   "main": "index.js",
   "scripts": {
-    "test": "PONYCONFIG_TRUE=1 PONYCONFIG_FALSE=0 PONYCONFIG_ENV=ENVVAR_ENVIRONMENT mocha test",
-    "cover": "PONYCONFIG_TRUE=1 PONYCONFIG_FALSE=0 PONYCONFIG_ENV=ENVVAR_ENVIRONMENT ./node_modules/istanbul/lib/cli.js cover _mocha -- ./test"
+    "test": "mocha test",
+    "cover": "./node_modules/istanbul/lib/cli.js cover _mocha -- ./test"
   },
   "repository": {
     "type": "git",
@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "chalk": "^1.1.3",
+    "colors": "^1.1.2",
     "fs-coalesce": "^0.1.3",
     "lodash": "^4.17.2",
     "minimist": "^1.1.3"
