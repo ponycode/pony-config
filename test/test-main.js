@@ -119,15 +119,15 @@ describe('use file', function(){
     });
 });
 
-
-//-----------
-// Expects in the environment variables:
-// "PONYCONFIG_TRUE=1" and
-// "PONYCONFIG_FALSE=0",
-// and no definition for PONYCONFIG_MISSING
-//-----------
-
 describe('useEnvironmentVar', function(){
+
+    beforeEach( function(){
+        process.env['PONYCONFIG_TRUE'] = 1;
+        process.env['PONYCONFIG_FALSE'] = 0;
+        delete process.env['PONYCONFIG_MISSING'];
+        process.env['ENVVAR_ENVIRONMENT'] = 'Test File Environment';
+    });
+
     it('use environment variables', function(){
         config.useEnvironmentVar( 'test.trueValue', 'PONYCONFIG_TRUE');
         config.useEnvironmentVar( 'test.falseValue', 'PONYCONFIG_FALSE');
@@ -148,13 +148,13 @@ describe('useEnvironmentVar', function(){
 
 });
 
-//-----------
-// Expects in the environment variables:
-// "PONYCONFIG_ENV=ENVVAR_ENVIRONMENT" and
-// and no definition for PONYCONFIG_ENV_MISSING
-//-----------
-
 describe('findEnvironment', function(){
+
+    beforeEach( function(){
+        process.env['PONYCONFIG_ENV'] = 'ENVVAR_ENVIRONMENT';
+        delete process.env['PONYCONFIG_ENV_MISSING'];
+    });
+
     it('search environment, default', function(){
         config.setOptions( { caseSensitiveEnvironments: true} );
         config.findEnvironment( { default: 'Default Environment' } );

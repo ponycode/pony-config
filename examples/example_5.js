@@ -19,12 +19,13 @@ console.log( 'Demonstrating dynamic configuration objects');
 
 config
 	.set('dynamic_is_fun', true )
-	.useCommandLineArguments( [
-		{ path:'zip', options:['zip','zipcode'] },
-		{ path:'version', options:['v', 'version'] },
-		{ path:'exclusion', options:'x' },
-		{ path:'outputFilename', options:'o' }
-	])
+	.cliOption( 'zip', ['zip','zipcode'], 'customerZipCode' )
+	.cliOption( 'version', ['v', 'version'] )
+	.cliOption( 'exclusion', 'x', 'exclude this customer from lists', false )
+	.cliOption( 'outputFilename', 'o' )
+	.cliOption( 'default', 'd', 'Default value to use', 'a-default' )
+	.cliOption( 'json', ['j','json'] )
+	.cliParse()
 	.set('account.secret_key', 'p&ssw0rd')
 	.useObject( dynamicConfig(), "Dynamic" )				// build configuration objects from config values
 	.list( { secure: 'account.secret_key' });

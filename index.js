@@ -27,6 +27,8 @@
     var Config = require('./lib/Config');
     var arrayWrap = require('./lib/array-wrap');
 
+    var CLI_OPTION_HELP = { path: "help", options: ["h","help"], description: "Show usage" };
+
     // ----------------------------
     // Configuration State, Module-Global by design
     // ----------------------------
@@ -35,6 +37,7 @@
     var _environment = false;               // by default no environment is selected
     var _whenEnvironments = false;
 	var _interpreter = false;
+	var _cliOptions = [ CLI_OPTION_HELP ];
 
 	var _locked = false;
 
@@ -45,6 +48,7 @@
         _environment = false;
         _whenEnvironments = false;
 	    _locked = false;
+		_cliOptions = [ CLI_OPTION_HELP ];
     }
 
 	// ----------------------------
@@ -198,15 +202,91 @@
 			_parseCommandlineArguments( usageRules );
 
             for( var i=0; i < usageRules.length; i++ ){
+            	var sourceHint = 'USE-COMMAND-LINE';
                 var value = _getCommandlineValue( usageRules[i].path );
+                if( value === undefined && usageRules[i].defaultValue !== undefined ){
+                	sourceHint += '(DEFAULT)';
+                	value = usageRules[i].defaultValue;
+				}
                 if( value !== undefined ){
-                    _config.set( usageRules[i].path, value, _keySourceHintFrom( 'USE-COMMAND-LINE', usageRules[i].options, _whenEnvironments) );
+                	if( usageRules[i].parser ){
+                		try{
+							value = usageRules[i].parser.call( null, value );
+						}catch( error ){
+                			console.error( "Error parsing input for option: ", usageRules[i].options );
+							value = undefined;
+						}
+					}
+                    _config.set( usageRules[i].path, value, _keySourceHintFrom( sourceHint, usageRules[i].options, _whenEnvironments) );
                 }
             }
         }
         _whenEnvironments = false;
         return this;
     }
+
+    function _cliOption( path, options, description, optionalDefaultValue, optionalParser ){
+    	if( path === undefined || options == undefined ) throw new Error("CONFIG: cli option requires path and options parameters" );
+		var optionsArray = arrayWrap.wrap( options );
+
+		if( typeof optionalDefaultValue === 'function' && arguments.length === 4 ){
+			optionalParser = optionalDefaultValue;
+			optionalDefaultValue = undefined;
+		}
+
+		var usageRule = {
+			path: path,
+			options: optionsArray,
+			description: description,
+			defaultValue: optionalDefaultValue,
+			parser: optionalParser
+		};
+
+		_cliOptions.push( usageRule );
+		return this;
+	}
+
+	function _cliParse(){
+    	_useCommandLineArguments( _cliOptions );
+		return this;
+	}
+
+	function _optionsAsString( optionsArray ){
+		var optionsAsStrings = [];
+		for( var i=0; i < optionsArray.length; i++ ){
+			var optionChars = optionsArray[i];
+			if( optionChars.length === 1 ) optionsAsStrings.push( "-" + optionChars );
+			else optionsAsStrings.push( "--" + optionChars );
+		}
+		return optionsAsStrings.join(", ");
+	}
+
+	var PAD = "                                                                                                   ";
+
+	function _lpad( string, padTo ){
+		var padWidth = padTo - string.length;
+		if( padWidth > 0 ) string = PAD.substring( 0, padWidth ) + string;
+		return string;
+	}
+
+	function _rpad( string, padTo ){
+		var padWidth = padTo - string.length;
+		if( padWidth > 0 ) string = string + PAD.substring( 0, padWidth );
+		return string;
+	}
+
+	function _cliHelp(){
+
+		console.log("Options:\n");
+		for( var i=0; i < _cliOptions.length; i++ ){
+			var opt = _cliOptions[i];
+			var output = "  " + _rpad( _optionsAsString( opt.options ), 24 );
+			if( opt.description !== undefined ) output += " " + opt.description;
+			if( opt.defaultValue !== undefined ) output += ", Default=" + opt.defaultValue;
+			console.log( output );
+		}
+		console.log( "\n" );
+	}
 
 	// ----------------------------
 	// Parse Commandline Arguments. Alternative to 'use'.  Parses command line without applying values to config
@@ -347,6 +427,9 @@
 	exports.useCommandlineArguments = _useCommandLineArguments;
 	exports.parseCommandlineArguments = _parseCommandlineArguments;
 	exports.getCommandlineValue = _getCommandlineValue;
+	exports.cliOption = _cliOption;
+	exports.cliParse = _cliParse;
+	exports.cliHelp = _cliHelp;
     exports.get = _get;
     exports.set = _set;
     exports.list = _list;
