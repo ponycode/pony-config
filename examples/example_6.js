@@ -8,7 +8,7 @@ config
 .cliOption( 'exclusion', 		'-x [customerid]', 'exclude this customer from lists', false )
 .cliOption( 'output.filepath', 	'-o [outfilepath]', 'The output file to write' )
 .cliOption( 'default', 			'-d [value]', 'Default value to use', 'a-default' )
-.cliOption( 'json', '			s-j, --json [jsonString]', 'A json file input',  JSON.parse )
+.cliOption( 'json', 			'-j, --json [jsonString]', 'A json file input',  JSON.parse )
 .cliArguments( 'arguments' )
 .cliParse();
 
