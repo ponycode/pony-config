@@ -8,7 +8,7 @@ config.object({ 'organization': 'PonyCode' });
 config.when(['dev']).file( 'example-dev-config.json' );
 config.when(['prod','stage']).file( 'example-prod-config.json' );
 config.when('dev').
-cliOption( 'address.zip','zip, zipcode')
+cliFlag( 'address.zip','zip, zipcode')
 .cliParse();
 
 config.set('address.zip-state', config.get('address.zip')+'-'+config.get('address.state'));

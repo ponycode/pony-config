@@ -1,13 +1,15 @@
 # pony-config
 
+> Ver 2.0.0 introduces breaking API changes
+
 Versatile, Predictable Configuration
 
 #### Sources are merged predictably
-- Config properites are extended and replaced recursively
+- Config propertes are extended and replaced recursively
 - Powerful debug trace of each config value's source
-- Makes it easy to set defaults, load common configuration, and finally override with environement specific values.
+- Makes it easy to set defaults, load common configuration, and finally override with environment specific values.
 
-#### Configuration can be loaded from many sources
+#### Configuration can be combined from many sources
 - JSON files
 - Javascript Objects
 - Environment Variables
@@ -49,25 +51,25 @@ config.set('verified', true);
   - [get( *path*, *[default value]* )](#get-path-default-value-)
   - [set( *path*, *value* )](#set-path-value-)
 - [Load a Configuration Source](#load-a-configuration-source)
-  - [object( *object* )](#useobject-object-)
-  - [file( *filepath* )](#usefile-filepath-)
-  - [env( *path*, *variable name* )](#useenvironmentvar-path-variable-name-)
-  - [useCommandLineArguments( *usageRule* | [*usageRules*] )](#usecommandlinearguments-usagerule--usagerules-)
+  - [object( *object* )](#object-object-)
+  - [file( *filepath* )](#file-filepath-)
+  - [env( *path*, *variable name* )](#env-path-variable-name-)
+  - [cliParse()](#cliparse)
 - [Locking Config Against Changes](#locking-config-against-changes)
 - [Merging Configuration Sources](#merging-configuration-sources)
 - [Run-time Environment Configuration](#run-time-environment-configuration)
   - [Determining the Run-time Environment](#determining-the-run-time-environment)
-    - [findRuntimeEnvironment( *options* )](#findenvironment-options-)
-    - [useRuntimeEnvironment( *key* )](#useenvironment-key-)
-    - [isRuntimeEnvironment( *environment* )](#isenvironment-environment-)
-    - [getRuntimeEnvironment()](#getenvironment)
+    - [findRuntimeEnvironment( *options* )](#findruntimeenvironment-options-)
+    - [useRuntimeEnvironment( *key* )](#useruntimeenvironment-key-)
+    - [isRuntimeEnvironment( *environment* )](#isruntimeenvironment-environment-)
+    - [getRuntimeEnvironment()](#getruntimeenvironment)
   - [Declare Which Configurations to Apply](#declare-which-configurations-to-apply)
     - [when( *key* | *[keys]* )](#when-key--keys-)
     - [always()](#always)
 - [Debugging](#debugging)
   - [list( options )](#list-options-)
   - [reset()](#reset)
-  - [options( o );](#setoptions-o-)
+  - [options( o );](#options-o-)
   - [See Also](#see-also)
   - [Tests](#tests)
   - [Test Coverage (via istanbul.js)](#test-coverage-via-istanbuljs)
@@ -130,31 +132,44 @@ If the environmnet variable isn't found, the config is unchanged.
 
 ```javascript
 config.env( "settings.server.port", "PORT");
-var port = config.get( "settings,server.port" );
+var port = config.get( "settings.server.port" );
 ```
 
-### useCommandLineArguments( *usageRule* | [*usageRules*] )
+### cliParse()
 
-Configuration values can be loaded from the command line. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and values are added at dot-paths in the configuration. CLI *usageRules* are defined similarly to many commandline processing tools.
+Configuration be loaded from the commandline and combined with the rest of your config. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and values are added at dot-paths in the configuration.
 
-***usageRule*** = { paths: *dotPath*, options: *optionFlags* | [*optionFlags*] }
+Commandline parsing can be conditional on the runtime environment. For example `config.when('dev').cliParse()`.
 
-For example, if your program's options are **-f|--file filename, -a|--appendmode, -s**,
-then the following will load 'hamster.jpg' at 'outputs.binaryFilename', and true at 'settings.appendMode'.  Any expected argument that is not found will be ignored.
+A help flag is defined for you as `-h, --help`. The flags, descriptions and defaults will be output to stdout.
+
+**An Example:**
 
 ```bash
-funnyprogram -f hamster.jpg -a
+funnyprogram -w 650 -a -- hamster.jpg
 ```
 ```javascript
-config.useCommandLineArguments( [
-    { path : "outputs.binaryFilename", options : ["f","file"] },
-    { path : "settings.appendMode", options : ["a","appendMode"] },
-    { path : "settings.silentMode", options : "s" }
-]);
+config
+.cliFlag( "settings.width", "-w, --width [1280]", "resize image to fit width in pixels", false },
+.cliFlag( "settings.appendMode", "-a, --append", "run program in append mode", false },
+.cliFlag( "outputs.silentMode", "-s, --silent", "run program in silent mode", false },
+.cliArguments( "inputs.files" )
+.cliParse()
 ```
+> cliParse must be called after all cliFlag statements command line parsing
 
-An alternative way to utilize command line arguments with pony-config is to call ```parseCommandlineArguments( *usageRules* )```, which will interpret the command line arguments
-without committing them to the configuration. Then you can use ```getCommandLineValue( *path* )``` to access the values that were passed on the command line.
+`cliFlag( path, flags, description, opt_default, opt_parser )`
+
+- `path` is the config path to store the value
+- `flags` is a comma separated list of the flags for this parameter
+- `description` will be displayed in the help text
+- `opt_default` is the default config value is the flag is not on the command line
+- `opt_parser` is an optional function to be called with the input before storing in the config.
+
+`cliArguments` will gather all inputs after the last flag as an array at the given path.
+ 
+> input parameters are always attached to the flag to the left of them. After a `--` on the command line
+all inputs will be gathered into the arguments.
 
 ## Locking Config Against Changes
 Once the configuration is set, you can lock it against further changes.  Pass *true* to have change attempts throw an exception, or set { 'exceptionOnLocked' : true } in your config options.

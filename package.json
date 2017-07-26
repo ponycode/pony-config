@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha test",
-    "cover": "./node_modules/istanbul/lib/cli.js cover _mocha -- ./test"
+    "cover": "./node_modules/istanbul/lib/cli.js cover _mocha -- ./test",
+    "doctoc": "doctoc --guthub ."
   },
   "repository": {
     "type": "git",

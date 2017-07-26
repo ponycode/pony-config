@@ -26,7 +26,7 @@
     var Config = require('./lib/Config');
     var arrayWrap = require('./lib/array-wrap');
 
-    var CLI_OPTION_HELP = { path: "help", options: ["h","help"], description: "Show usage" };
+    var CLI_FLAG_HELP = { path: "help", flags: ["h","help"], description: "Show usage" };
 
     // ----------------------------
     // Configuration State, Module-Global by design
@@ -36,7 +36,7 @@
     var _environment = false;               // by default no environment is selected
     var _whenEnvironments = false;
 	var _interpreter = false;
-	var _cliOptions = [ CLI_OPTION_HELP ];
+	var _cliFlags = [ CLI_FLAG_HELP ];
 	var _cliArgumentsPath = false;
 	var _locked = false;
 
@@ -47,7 +47,7 @@
         _environment = false;
         _whenEnvironments = false;
 	    _locked = false;
-		_cliOptions = [ CLI_OPTION_HELP ];
+		_cliFlags = [ CLI_FLAG_HELP ];
 		_cliArgumentsPath = false;
     }
 
@@ -181,6 +181,19 @@
 		return this;
 	}
 
+	// ----------------------------
+	// Set configuration by requiring a module and applying the object on the when clause
+	// NOTE: Caller should fully resolve path else require will attempt to locate relative to THIS module
+	// ----------------------------
+	function _useRequire( module ){
+		if( _shouldApplyConfig( _whenEnvironments ) ){
+			var object = require( module );
+			_useObject( object );
+		}
+		_whenEnvironments = false;
+		return this;
+	}
+
     // ----------------------------
     // Set configuration from an OS environment variable
     // ----------------------------
@@ -196,106 +209,100 @@
     // Set configuration from the command line
     // ----------------------------
     function _useCommandLineArguments( usageRules ){
-	    if( _shouldApplyConfig( _whenEnvironments ) ){
+		usageRules = _santizedUsageRules( usageRules );
+		_parseCommandlineArguments( usageRules );
 
-			usageRules = _santizedUsageRules( usageRules );
-			_parseCommandlineArguments( usageRules );
+		if( _cliArgumentsPath ) _config.set( _cliArgumentsPath, _interpreter.arguments, _keySourceHintFrom( 'USE-COMMAND-LINE' ), _whenEnvironments );
 
-			if( _cliArgumentsPath ) _config.set( _cliArgumentsPath, _interpreter.arguments, _keySourceHintFrom( 'USE-COMMAND-LINE' ), _whenEnvironments );
-
-            for( var i=0; i < usageRules.length; i++ ){
-            	var sourceHint = 'USE-COMMAND-LINE';
-                var value = _getCommandlineValue( usageRules[i].path );
-                if( value === undefined && usageRules[i].defaultValue !== undefined ){
-                	sourceHint += '(DEFAULT)';
-                	value = usageRules[i].defaultValue;
-				}
-                if( value !== undefined ){
-                	if( usageRules[i].parser ){
-                		try{
-							value = usageRules[i].parser.call( null, value );
-						}catch( error ){
-                			console.error( "Error parsing input for option: ", usageRules[i].options );
-							value = undefined;
-						}
+		for( var i=0; i < usageRules.length; i++ ){
+			var sourceHint = 'USE-COMMAND-LINE';
+			var value = _getCommandlineValue( usageRules[i].path );
+			if( value === undefined && usageRules[i].defaultValue !== undefined ){
+				sourceHint += '(DEFAULT)';
+				value = usageRules[i].defaultValue;
+			}
+			if( value !== undefined ){
+				if( usageRules[i].parser ){
+					try{
+						value = usageRules[i].parser.call( null, value );
+					}catch( error ){
+						console.error( "Error parsing input for option: ", usageRules[i].flags );
+						value = undefined;
 					}
-                    _config.set( usageRules[i].path, value, _keySourceHintFrom( sourceHint, usageRules[i].options, _whenEnvironments) );
-                }
-            }
-        }
-        _whenEnvironments = false;
+				}
+				_config.set( usageRules[i].path, value, _keySourceHintFrom( sourceHint, usageRules[i].flags, _whenEnvironments) );
+			}
+		}
         return this;
     }
 
-    function _parseOptionsParameter( options ){
-    	var optionsComponent = options;
+    function _parseFlagsParameter( flags ){
+    	var flagsComponent = flags;
     	var parameterComponent = null;
 
-    	var parameterMatch = options.match(/(^[^\[\<]*)(\[.*\])|(\<.*\>)/);
+    	var parameterMatch = flags.match(/(^[^\[\<]*)(\[.*\])|(\<.*\>)/);
     	if( parameterMatch ){
-    		optionsComponent = parameterMatch[1];
+    		flagsComponent = parameterMatch[1];
     		parameterComponent = parameterMatch[2];
 		}
 
-		var optionArray = optionsComponent.split(',');
-		optionsArray = _.map( optionArray, function(string){
+		var flagsArray = flagsComponent.split(',');
+		flagsArray = _.map( flagsArray, function(string){
     		return string.replace(/-+/g, '').trim();
     	});
 
 		return {
-			options: optionsArray,
+			flags: flagsArray,
 			parameter: parameterComponent
 		};
 	}
 
 
-    function _cliOption( path, options, description, optionalDefaultValue, optionalParser ){
-		if( _shouldApplyConfig( _whenEnvironments )){
-			if( path === undefined || options == undefined ) throw new Error( "CONFIG: cli option requires path and options parameters" );
-			if( _.isArray( options ) ) options = options.join( ',' );
+    function _cliFlag( path, flags, description, optionalDefaultValue, optionalParser ){
+		if( path === undefined || flags == undefined ) throw new Error( "CONFIG: cli option requires path and flags parameters" );
+		if( _.isArray( flags ) ) flags = flags.join( ',' );
 
-			if( typeof optionalDefaultValue === 'function' && arguments.length === 4 ){
-				optionalParser = optionalDefaultValue;
-				optionalDefaultValue = undefined;
-			}
-
-			var optionsSpec = _parseOptionsParameter( options );
-
-			var usageRule = {
-				path: path,
-				options: optionsSpec.options,
-				parameter: optionsSpec.parameter,
-				description: description,
-				defaultValue: optionalDefaultValue,
-				parser: optionalParser
-			};
-
-			_cliOptions.push( usageRule );
+		if( typeof optionalDefaultValue === 'function' && arguments.length === 4 ){
+			optionalParser = optionalDefaultValue;
+			optionalDefaultValue = undefined;
 		}
+
+		var flagsSpec = _parseFlagsParameter( flags );
+
+		var usageRule = {
+			path: path,
+			flags: flagsSpec.flags,
+			parameter: flagsSpec.parameter,
+			description: description,
+			defaultValue: optionalDefaultValue,
+			parser: optionalParser
+		};
+
+		_cliFlags.push( usageRule );
 		return this;
 	}
 
 	function _cliArguments( path ){
-		if( _shouldApplyConfig( _whenEnvironments )){
-			_cliArgumentsPath = path;
-		}
+		_cliArgumentsPath = path;
     	return this;
 	}
 
 	function _cliParse(){
-    	_useCommandLineArguments( _cliOptions );
+		if( _shouldApplyConfig( _whenEnvironments ) ){
+			_useCommandLineArguments( _cliFlags );
+		}
     	_whenEnvironments = false;
 		return this;
 	}
 
-	function _optionsAsString( optionsArray ){
-		var optionsAsStrings = [];
-		for( var i=0; i < optionsArray.length; i++ ){
-			var optionChars = optionsArray[i];
-			if( optionChars.length === 1 ) optionsAsStrings.push( "-" + optionChars );
-			else optionsAsStrings.push( "--" + optionChars );
+	function _flagsAsString( flagsArray ){
+		var flagsAsStrings = [];
+		for( var i=0; i < flagsArray.length; i++ ){
+			var flagsChars = flagsArray[i];
+			if( flagsChars.length === 1 ) flagsAsStrings.push( "-" + flagsChars );
+			else flagsAsStrings.push( "--" + flagsChars );
 		}
-		return optionsAsStrings.join(", ");
+		return flagsAsStrings.join(", ");
 	}
 
 	var PAD = "                                                                                                   ";
@@ -314,13 +321,13 @@
 
 	function _cliHelp(){
 
-		console.log("Options:\n");
-		for( var i=0; i < _cliOptions.length; i++ ){
-			var opt = _cliOptions[i];
-			var optionString = _optionsAsString( opt.options );
-			if( opt.parameter ) optionString += " " + opt.parameter;
+		console.log("Flags:\n");
+		for( var i=0; i < _cliFlags.length; i++ ){
+			var opt = _cliFlags[i];
+			var flagsString = _flagsAsString( opt.flags );
+			if( opt.parameter ) flagsString += " " + opt.parameter;
 
-			var output = "  " + _rpad( optionString, 40 );
+			var output = "  " + _rpad( flagsString, 40 );
 			if( opt.description !== undefined ) output += " " + opt.description;
 			if( opt.defaultValue !== undefined ) output += ", Default=" + opt.defaultValue;
 			console.log( output );
@@ -438,11 +445,11 @@
 	function _santizedUsageRules( usageRules ){
 		usageRules = arrayWrap.wrap( usageRules );
 		for( var i=0; i < usageRules.length; i++ ){
-			var options = arrayWrap.wrap( usageRules[i].options );
-			for( var j=0; j < options.length; j++ ){
-				options[j] = options[j].split('-').join('');		// remove all dashes
+			var flags = arrayWrap.wrap( usageRules[i].flags );
+			for( var j=0; j < flags.length; j++ ){
+				flags[j] = flags[j].split('-').join('');		// remove all dashes
 			}
-			usageRules[i].options = options;
+			usageRules[i].flags = flags;
 		}
 		return usageRules;
 	}
@@ -459,7 +466,7 @@
     exports.file = _useFile;
     exports.object = _useObject;
     exports.env = _env;
-	exports.cliOption = _cliOption;
+	exports.cliFlag = _cliFlag;
 	exports.cliParse = _cliParse;
 	exports.cliHelp = _cliHelp;
 	exports.cliArguments = _cliArguments;
@@ -470,4 +477,5 @@
 	exports.lock = _lock;
 	exports.isRuntimeEnvironment = _isEnvironment;
 	exports.function = _useFunction;
+	exports.require = _useRequire;
 })();
