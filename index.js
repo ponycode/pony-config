@@ -86,7 +86,7 @@
 
     function _findRuntimeEnvironment( search ){
         _environment = env.search( search );
-		if( !_options.caseSensitiveEnvironments ) _environment = _environment.toUpperCase();
+		if( !_options.caseSensitiveEnvironments && _.isString( _environment )) _environment = _environment.toUpperCase();
 		return this;
     }
 
