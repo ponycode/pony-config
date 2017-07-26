@@ -34,7 +34,7 @@ function getObject(){
 describe('List smoketest', function(){
 
     it('should return log data', function(){
-        config.useObject( getObject() );
+        config.object( getObject() );
         config.list( { outputStream : outputStream, noColor : true });
         expect( log.length).toBeGreaterThan( 0 );
     });
@@ -43,7 +43,7 @@ describe('List smoketest', function(){
 
 describe('List header', function(){
     it('should return log header', function(){
-        config.findEnvironment( { default: 'TEST' } );
+        config.findRuntimeEnvironment( { default: 'TEST' } );
         config.lock();
         config.list( { outputStream : outputStream, noColor : true });
         var out = log.join('/');
@@ -56,8 +56,8 @@ describe('List header', function(){
 
 describe('Case sensitive List header', function(){
     it('should return log header', function(){
-        config.setOptions({ caseSensitiveEnvironments: true });
-        config.findEnvironment( { default: 'test' } );
+        config.options({ caseSensitiveEnvironments: true });
+        config.findRuntimeEnvironment( { default: 'test' } );
         config.lock();
         config.list( { outputStream : outputStream, noColor : true });
         var out = log.join('/');
@@ -274,7 +274,7 @@ describe('List Value Length', function() {
 describe('List Secure Value', function() {
 
     it('should hide secure value and nested keyPaths', function () {
-        config.useObject({
+        config.object({
             string: "string",
             mapObject: {
                 key_a: "value_a",
@@ -292,7 +292,7 @@ describe('List Secure Value', function() {
     });
 
     it('should hide secure value inside map with keyPath', function(){
-		config.useObject({
+		config.object({
 			string: "string",
 			mapObject: {
 				key_a: "value_a",
@@ -321,7 +321,7 @@ describe('List Secure Value', function() {
 	});
 
 	it('should hide secure value inside array with keyPath', function(){
-		config.useObject({
+		config.object({
 			string: "string",
 			mapObject: {
 				key_a: "value_a",
@@ -354,7 +354,7 @@ describe('List Secure Value', function() {
 describe('List formatter option', function() {
 
     it('should output integers as hex', function(){
-        config.useObject({
+        config.object({
             string: "string",
             mapObject: {
                 key_a: 3.15,

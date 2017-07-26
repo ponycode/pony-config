@@ -7,7 +7,6 @@
 // log when set dot-path is extending objects
 // allow a key path for where a file or object is loaded
 // add debug mode to trace key overwrites (probably requires rewriting 'defaults')
-// load configuration from command line parameters
 // ------------------------------------------------------
 
 ( function(){
@@ -85,19 +84,19 @@
     // Ignores config settings that aren't for the current environment
     // ----------------------------
 
-    function _findEnvironment( search ){
+    function _findRuntimeEnvironment( search ){
         _environment = env.search( search );
 		if( !_options.caseSensitiveEnvironments ) _environment = _environment.toUpperCase();
 		return this;
     }
 
-    function _useEnvironment( environment ){
+    function _useRuntimeEnvironment( environment ){
     	if( !_options.caseSensitiveEnvironments ) environment = environment.toUpperCase();
         _environment = environment;
         return this;
     }
 
-    function _getEnvironment(){
+    function _getRuntineEnvironment(){
         return _environment;
     }
 
@@ -185,7 +184,7 @@
     // ----------------------------
     // Set configuration from an OS environment variable
     // ----------------------------
-    function _useEnvironmentVar( key, envVariableName ){
+    function _env( key, envVariableName ){
 	    if( _shouldApplyConfig( _whenEnvironments ) && process.env[ envVariableName ] !== undefined ){
             _config.set( key, process.env[ envVariableName ], _keySourceHintFrom( 'USE-ENVIRONMENT', envVariableName, _whenEnvironments) );
         }
@@ -251,36 +250,41 @@
 
 
     function _cliOption( path, options, description, optionalDefaultValue, optionalParser ){
-    	if( path === undefined || options == undefined ) throw new Error("CONFIG: cli option requires path and options parameters" );
-		if( _.isArray( options )) options = options.join(',');
+		if( _shouldApplyConfig( _whenEnvironments )){
+			if( path === undefined || options == undefined ) throw new Error( "CONFIG: cli option requires path and options parameters" );
+			if( _.isArray( options ) ) options = options.join( ',' );
 
-		if( typeof optionalDefaultValue === 'function' && arguments.length === 4 ){
-			optionalParser = optionalDefaultValue;
-			optionalDefaultValue = undefined;
+			if( typeof optionalDefaultValue === 'function' && arguments.length === 4 ){
+				optionalParser = optionalDefaultValue;
+				optionalDefaultValue = undefined;
+			}
+
+			var optionsSpec = _parseOptionsParameter( options );
+
+			var usageRule = {
+				path: path,
+				options: optionsSpec.options,
+				parameter: optionsSpec.parameter,
+				description: description,
+				defaultValue: optionalDefaultValue,
+				parser: optionalParser
+			};
+
+			_cliOptions.push( usageRule );
 		}
-
-		var optionsSpec = _parseOptionsParameter( options );
-
-		var usageRule = {
-			path: path,
-			options: optionsSpec.options,
-			parameter: optionsSpec.parameter,
-			description: description,
-			defaultValue: optionalDefaultValue,
-			parser: optionalParser
-		};
-
-		_cliOptions.push( usageRule );
 		return this;
 	}
 
 	function _cliArguments( path ){
-    	_cliArgumentsPath = path;
+		if( _shouldApplyConfig( _whenEnvironments )){
+			_cliArgumentsPath = path;
+		}
     	return this;
 	}
 
 	function _cliParse(){
     	_useCommandLineArguments( _cliOptions );
+    	_whenEnvironments = false;
 		return this;
 	}
 
@@ -446,23 +450,15 @@
 	// ----------------------------
     // Expose public functions
     // ----------------------------
-    exports.setOptions = _setOptions;
-    exports.findEnvironment = _findEnvironment;
-    exports.getEnvironment = _getEnvironment;
-    exports.useEnvironment = _useEnvironment;
+    exports.options = _setOptions;
+    exports.findRuntimeEnvironment = _findRuntimeEnvironment;
+    exports.getRuntimeEnvironment = _getRuntineEnvironment;
+    exports.useRuntimeEnvironment = _useRuntimeEnvironment;
     exports.when = _when;
     exports.always = _always;
-    exports.useFile = _useFile;
-    exports.useObject = _useObject;
-    exports.useEnvironmentVar = _useEnvironmentVar;
-	exports.useCommandLineArguments = _useCommandLineArguments;
-	exports.useCommandLineArguments = _useCommandLineArguments;
-	exports.parseCommandLineArguments = _parseCommandlineArguments;
-	exports.getCommandLineValue = _getCommandlineValue;
-	exports.useCommandlineArguments = _useCommandLineArguments;
-	exports.useCommandlineArguments = _useCommandLineArguments;
-	exports.parseCommandlineArguments = _parseCommandlineArguments;
-	exports.getCommandlineValue = _getCommandlineValue;
+    exports.file = _useFile;
+    exports.object = _useObject;
+    exports.env = _env;
 	exports.cliOption = _cliOption;
 	exports.cliParse = _cliParse;
 	exports.cliHelp = _cliHelp;
@@ -472,6 +468,6 @@
     exports.list = _list;
     exports.reset = _reset;
 	exports.lock = _lock;
-	exports.isEnvironment = _isEnvironment;
-	exports.useFunction = _useFunction;
+	exports.isRuntimeEnvironment = _isEnvironment;
+	exports.function = _useFunction;
 })();

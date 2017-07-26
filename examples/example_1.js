@@ -7,13 +7,13 @@ console.log('');
 console.log( 'Demonstrating loading configuration');
 
 config
-    .setOptions( { debug: true } )
-    .findEnvironment( { paths:['./example-env-file'], env: 'ENVIRONMENT', default:'prod', debug: true} )
-    .always().useObject( {'organization': 'PonyCode' } )
-    .when(['dev']).useFile( 'example-dev-config.json' )
+    .options( { debug: true } )
+    .findRuntimeEnvironment( { paths:['./example-env-file'], env: 'ENVIRONMENT', default:'prod', debug: true} )
+    .always().object( {'organization': 'PonyCode' } )
+    .when(['dev']).file( 'example-dev-config.json' )
     .when(['prod','stage'])
-        .useFile( 'example-prod-config.json' )
-        .useObject( { productionKey: 'pkey' })
+        .file( 'example-prod-config.json' )
+        .object( { productionKey: 'pkey' })
     .list();
 
 console.log('');

@@ -23,15 +23,15 @@ Configuration can be selected at run-time for each of your environments, for exa
 The run-time environment is determined by searching file paths and environment variables.
 
 ```javascript
-config.findEnvironment( { paths:['./env-file'], env: 'ENVIRONMENT', default:'prod');
+config.findRuntimeEnvironment( { paths:['./env-file'], env: 'ENVIRONMENT', default:'prod');
 ```
 
 ## A Simple Example
 ```javascript
 var config = require('pony-config');
 
-config.useFile('common-config.json');
-config.useFile('local-config.json');
+config.file('common-config.json');
+config.file('local-config.json');
 
 var name = config.get('name');
 var street = config.get('address.street');
@@ -49,25 +49,25 @@ config.set('verified', true);
   - [get( *path*, *[default value]* )](#get-path-default-value-)
   - [set( *path*, *value* )](#set-path-value-)
 - [Load a Configuration Source](#load-a-configuration-source)
-  - [useObject( *object* )](#useobject-object-)
-  - [useFile( *filepath* )](#usefile-filepath-)
-  - [useEnvironmentVar( *path*, *variable name* )](#useenvironmentvar-path-variable-name-)
+  - [object( *object* )](#useobject-object-)
+  - [file( *filepath* )](#usefile-filepath-)
+  - [env( *path*, *variable name* )](#useenvironmentvar-path-variable-name-)
   - [useCommandLineArguments( *usageRule* | [*usageRules*] )](#usecommandlinearguments-usagerule--usagerules-)
 - [Locking Config Against Changes](#locking-config-against-changes)
 - [Merging Configuration Sources](#merging-configuration-sources)
 - [Run-time Environment Configuration](#run-time-environment-configuration)
   - [Determining the Run-time Environment](#determining-the-run-time-environment)
-    - [findEnvironment( *options* )](#findenvironment-options-)
-    - [useEnvironment( *key* )](#useenvironment-key-)
-    - [isEnvironment( *environment* )](#isenvironment-environment-)
-    - [getEnvironment()](#getenvironment)
+    - [findRuntimeEnvironment( *options* )](#findenvironment-options-)
+    - [useRuntimeEnvironment( *key* )](#useenvironment-key-)
+    - [isRuntimeEnvironment( *environment* )](#isenvironment-environment-)
+    - [getRuntimeEnvironment()](#getenvironment)
   - [Declare Which Configurations to Apply](#declare-which-configurations-to-apply)
     - [when( *key* | *[keys]* )](#when-key--keys-)
     - [always()](#always)
 - [Debugging](#debugging)
   - [list( options )](#list-options-)
   - [reset()](#reset)
-  - [setOptions( o );](#setoptions-o-)
+  - [options( o );](#setoptions-o-)
   - [See Also](#see-also)
   - [Tests](#tests)
   - [Test Coverage (via istanbul.js)](#test-coverage-via-istanbuljs)
@@ -103,11 +103,11 @@ config.set( "name", { first : "Michael" );  // same as above, creating sub-paths
 Configuration sources are loaded via the `use` functions.  As configuration sources are loaded, they replace or extend
 previously loaded values.
 
-### useObject( *object* )
+### object( *object* )
 This is useful for creating a default configuration.  The object will be loaded at the root of the configuration.
 
 ```javascript
-config.useObject({
+config.object({
     name : "anonymous",         // accessed as config.get("name")
     rank : "beginner",
     settings : {                // Nested objects
@@ -117,19 +117,19 @@ config.useObject({
 });
 ```
 
-### useFile( *filepath* )
+### file( *filepath* )
 
 Configuration files are JSON files, and their contents are loaded to the root config object.
 If the file doesn't exist it will be ignored.
 
 
-### useEnvironmentVar( *path*, *variable name* )
+### env( *path*, *variable name* )
 
 Variables from process.env can be accessed by name, and stored using the dot path.
 If the environmnet variable isn't found, the config is unchanged.
 
 ```javascript
-config.useEnvironmentVar( "settings.server.port", "PORT");
+config.env( "settings.server.port", "PORT");
 var port = config.get( "settings,server.port" );
 ```
 
@@ -164,10 +164,10 @@ In development and testing, it's probably best to throw an exception as these ar
 exceptionOnLocked while the environment is _dev_.
 
 ```javascript
-config.lock( config.getEnvironment() === 'dev'  );
+config.lock( config.getRuntimeEnvironment() === 'dev'  );
 ```
 
-If require further protection from mutations of the config, use setOptions( { 'cloneWhenLocked' : true }. All of your get() methods will return clones of
+If require further protection from mutations of the config, use options( { 'cloneWhenLocked' : true }. All of your get() methods will return clones of
 config objects (with the exception of functions, which are returned without cloning so that internal state is preserved).
 
 Cloning comes with the cost of memory and cloning-time for each request, so consider the real risk and likelihood of mutations in your code before using *cloneWhenLocked*.
@@ -178,8 +178,8 @@ with an identical key path, it is merged with the previous node at that location
 
 For example,
 ```javascript
-config.useObject( { name : { first : "Mike" , last : "Moneybags" }}, age : 10 );
-config.useObject( { name : { nickname : "Buckaroo" }, gender : "male" } );
+config.object( { name : { first : "Mike" , last : "Moneybags" }}, age : 10 );
+config.object( { name : { nickname : "Buckaroo" }, gender : "male" } );
 ```
 
 Results in
@@ -209,7 +209,7 @@ Configuration sources that aren't needed for the current environment are ignored
 
 File Determinants are text files containing a string that will be the key.  For example, a file named ".env-file' may contain the string 'prod'.
 
-#### findEnvironment( *options* )
+#### findRuntimeEnvironment( *options* )
 1. Looks in options.**var** for the name of an environment variable.
 2. If the environment variable exists, uses its value as the key and exits
 3. Looks in options.**path** for a file path, or an array of file paths.
@@ -225,41 +225,41 @@ Path may include **~** to represent user home directory
 
 Example
 ```javascript
-config.findEnvironment( { paths:['~/.env', './env-file'], env: 'ENVIRONMENT', default:'prod');
+config.findRuntimeEnvironment( { paths:['~/.env', './env-file'], env: 'ENVIRONMENT', default:'prod');
 ```
 
-#### useEnvironment( *key* )
+#### useRuntimeEnvironment( *key* )
 Alternatively, if you have another way to determine your run-time environment, you can simply set the environment key directly.  You must set the environment **before** calling any *use* configuration functions.
 
 ```javascript
-config.useEnvironment('prod');
+config.useRuntimeEnvironment('prod');
 ```
 
-#### isEnvironment( *environment* )
+#### isRuntimeEnvironment( *environment* )
 Use to test the run-time environment that was resolved by pony-config. Takes into account case sensitivity options. The default
 is case-insensitivity.
 
-#### getEnvironment()
+#### getRuntimeEnvironment()
 Returns the current environment key.  Returns ```false``` is no environment key has been set.
 
 
 ### Declare Which Configurations to Apply
 
-*NOTE:* Environments are case insensitive unless `setOptions( { caseSensitiveEnvironments: false } )` is called.
+*NOTE:* Environments are case insensitive unless `options( { caseSensitiveEnvironments: false } )` is called.
 
 #### when( *key* | *[keys]* )
 Use the *when* clause to indicate which environments should load the source.  In any other environment, the source will be ignored. If no **when** clause is used, the source will be loaded in every environment.  A **when** clause is in effect until a **use** method is applied.
 
 ```javascript
-config.when('prod').useFile('productionConfig.json');
-config.when(['prod','stage']).useObject({ database : 'mongodb' });
+config.when('prod').file('productionConfig.json');
+config.when(['prod','stage']).object({ database : 'mongodb' });
 ```
 
 #### always()
 Always load the configuration source.  This is the default, but it is sometimes helpful to be explicit.
 
 ```javascript
-config.always().useFile( 'common.json' });
+config.always().file( 'common.json' });
 ```
 
 
@@ -296,7 +296,7 @@ The output looks like:
 ### reset()
 Used in tests, reset clears the Config for reusing an object
 
-### setOptions( o );
+### options( o );
 Turns on additional logging. Useful for tracing the loading of configuration files and environment search.
 
     o.debug = true | false              turns on logging (default is false)

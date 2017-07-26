@@ -30,7 +30,7 @@ describe('Lock makes data objects immutable', function(){
     it('should not change under set', function(){
         var instance = getInitialObject();
 
-        config.useObject( instance );
+        config.object( instance );
         config.lock( false );
 
         instance.mapObject.key_a = "new value";
@@ -48,26 +48,26 @@ describe('Lock makes data objects immutable', function(){
 
 describe('Lock guards use methods', function(){
 
-    it('should not change under calls to useObject', function(){
+    it('should not change under calls to object', function(){
         var instance = getInitialObject();
         var goldStandard = _.cloneDeep( instance );
 
-        config.useObject( instance );
+        config.object( instance );
         config.lock( false );
 
         var otherObject = { string : 'wrongstring' };
-        config.useObject( otherObject );
+        config.object( otherObject );
         assert.deepEqual( config.get('.'), goldStandard );
     });
 
-    it('should not change under calls to useFile', function(){
+    it('should not change under calls to file', function(){
         var instance = getInitialObject();
         var goldStandard = _.cloneDeep( instance );
 
-        config.useObject( instance );
+        config.object( instance );
         config.lock( false );
 
-        config.useFile('test/data/config_1.json');
+        config.file('test/data/config_1.json');
         assert.deepEqual( config.get('.'), goldStandard );
     });
 });
@@ -78,7 +78,7 @@ describe('Lock guards set method', function(){
         var instance = getInitialObject();
         var goldStandard = _.cloneDeep( instance );
 
-        config.useObject( instance );
+        config.object( instance );
         config.lock( false );
 
         config.set( "string", "wrongStrong" );
@@ -90,7 +90,7 @@ describe('Lock can throw exception', function(){
     it('should throw exception on set', function(){
         var instance = getInitialObject();
 
-        config.useObject( instance );
+        config.object( instance );
         config.lock( true );
         expect( function(){
             config.set( "string", "change");
@@ -99,8 +99,8 @@ describe('Lock can throw exception', function(){
 
     it('should throw exception on set using exceptionOnLocked config setting', function(){
         var instance = getInitialObject();
-        config.setOptions({ exceptionOnLocked : true });
-        config.useObject( instance );
+        config.options({ exceptionOnLocked : true });
+        config.object( instance );
         config.lock();
         expect( function(){
             config.set( "string", "change");
@@ -109,23 +109,23 @@ describe('Lock can throw exception', function(){
 
     it('should throw exception on use... using exceptionOnLocked config setting', function(){
         var instance = getInitialObject();
-        config.setOptions({ exceptionOnLocked : true });
-        config.useObject( instance );
+        config.options({ exceptionOnLocked : true });
+        config.object( instance );
         config.lock();
 
         expect( function(){
-            config.useObject( instance );
+            config.object( instance );
         }).toThrow(/lock/);
     });
 
     it('should NOT throw exception on use... overriding exceptionOnLocked config setting', function(){
         var instance = getInitialObject();
-        config.setOptions({ exceptionOnLocked : true });
-        config.useObject( instance );
+        config.options({ exceptionOnLocked : true });
+        config.object( instance );
         config.lock(false);
 
         expect( function(){
-            config.useObject( instance );
+            config.object( instance );
         }).toNotThrow(/lock/);
     });
 
@@ -137,8 +137,8 @@ describe('Lock returns deep clone', function(){
         var instance = getInitialObject();
         var goldStandard = _.cloneDeep( instance );
 
-        config.useObject( instance );
-        config.setOptions( {cloneWhenLocked: true} );
+        config.object( instance );
+        config.options( {cloneWhenLocked: true} );
         config.lock( false );
 
         var allConfig = config.get('.');
@@ -152,8 +152,8 @@ describe('Lock returns deep clone', function(){
         var instance = getInitialObject();
         var goldStandard = _.cloneDeep( instance );
 
-        config.useObject( instance );
-        config.setOptions( {cloneWhenLocked: true} );
+        config.object( instance );
+        config.options( {cloneWhenLocked: true} );
         config.lock( false );
 
         var mapObject = config.get('mapObject');
@@ -167,8 +167,8 @@ describe('Lock returns deep clone', function(){
         var instance = getInitialObject();
         var goldStandard = _.cloneDeep( instance );
 
-        config.useObject( instance );
-        config.setOptions( {cloneWhenLocked: true} );
+        config.object( instance );
+        config.options( {cloneWhenLocked: true} );
         config.lock( false );
 
         var allConfig = config.get('.');
@@ -181,8 +181,8 @@ describe('Lock returns deep clone', function(){
         var instance = getInitialObject();
         var goldStandard = _.cloneDeep( instance );
 
-        config.useObject( instance );
-        config.setOptions( {cloneWhenLocked: true} );
+        config.object( instance );
+        config.options( {cloneWhenLocked: true} );
         config.lock( false );
 
         var allConfig = config.get('.');
@@ -196,8 +196,8 @@ describe('Lock returns deep clone', function(){
         var instance = getInitialObject();
         var goldStandard = _.cloneDeep( instance );
 
-        config.useObject( instance );
-        config.setOptions( {cloneWhenLocked: true} );
+        config.object( instance );
+        config.options( {cloneWhenLocked: true} );
         config.lock( false );
 
         var allConfig = config.get('.');
@@ -210,8 +210,8 @@ describe('Lock returns deep clone', function(){
         var instance = getInitialObject();
         var goldStandard = _.cloneDeep( instance );
 
-        config.useObject( instance );
-        config.setOptions( {cloneWhenLocked: true} );
+        config.object( instance );
+        config.options( {cloneWhenLocked: true} );
         config.lock( false );
 
         var allConfig = config.get('.');
@@ -227,8 +227,8 @@ describe('Lock returns deep clone', function(){
         var instance = getInitialObject();
         var goldStandard = _.cloneDeep( instance );
 
-        config.useObject( instance );
-        config.setOptions( {cloneWhenLocked: true} );
+        config.object( instance );
+        config.options( {cloneWhenLocked: true} );
         config.lock( false );
 
         var allConfig = config.get('.');

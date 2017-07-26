@@ -1,13 +1,15 @@
 var config = require('../index.js');
 
-config.setOptions( { debug: true } );
+config.options( { debug: true } );
 
-config.findEnvironment( { paths:['~/test-pony-config-env','./example-env-file'], env: 'ENVIRONMENT', default:'prod', debug: true} );
+config.findRuntimeEnvironment( { paths:['~/test-pony-config-env','./example-env-file'], env: 'ENVIRONMENT', default:'prod', debug: true} );
 
-config.useObject({ 'organization': 'PonyCode' });
-config.when(['dev']).useFile( 'example-dev-config.json' );
-config.when(['prod','stage']).useFile( 'example-prod-config.json' );
-config.when('dev').useCommandLineArguments({ path:'address.zip', options:['zip','zipcode'] });
+config.object({ 'organization': 'PonyCode' });
+config.when(['dev']).file( 'example-dev-config.json' );
+config.when(['prod','stage']).file( 'example-prod-config.json' );
+config.when('dev').
+cliOption( 'address.zip','zip, zipcode')
+.cliParse();
 
 config.set('address.zip-state', config.get('address.zip')+'-'+config.get('address.state'));
 config.set('occupants', ['Scott','Steve','Stacy', ["Mother","Father"]] );

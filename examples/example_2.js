@@ -7,8 +7,8 @@ console.log('');
 console.log( 'Demonstrating loading configuration');
 
 config
-    .useObject( {'organization': 'PonyCode' } )
-    .useFile( 'example-dev-config.json' )
+    .object( {'organization': 'PonyCode' } )
+    .file( 'example-dev-config.json' )
     .list();
 
 console.log('');
