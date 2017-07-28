@@ -135,7 +135,7 @@ config.env( "settings.server.port", "PORT");
 var port = config.get( "settings.server.port" );
 ```
 
-### cliParse()
+### CliParse()
 
 Configuration be loaded from the commandline and combined with the rest of your config. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and values are added at dot-paths in the configuration.
 
@@ -154,22 +154,48 @@ config
 .cliFlag( "settings.appendMode", "-a, --append", "run program in append mode", false },
 .cliFlag( "outputs.silentMode", "-s, --silent", "run program in silent mode", false },
 .cliArguments( "inputs.files" )
+.cliUsage( "[flags] file..." )
+.cliOnHelp( function( helpText ){
+	console.log( helpText );
+	console.log( "see mywebsite.com for more help" );
+	process.exit(0);
+})
 .cliParse()
 ```
-> cliParse must be called after all cliFlag statements command line parsing
 
-`cliFlag( path, flags, description, opt_default, opt_parser )`
+> Input of negative numbers is problematic on a command line, as the *-* is interpreted as a flag. This enables
+> the use of numerals as flags (eg, -9). The safest way to accept negative input is to use an _equals_ as follows:
+> `--value=-9`
+
+#### cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`
 
 - `path` is the config path to store the value
 - `flags` is a comma separated list of the flags for this parameter
 - `description` will be displayed in the help text
-- `opt_default` is the default config value is the flag is not on the command line
-- `opt_parser` is an optional function to be called with the input before storing in the config.
+- `default` is the optional default value to store if the flag is not on the command line
+- `parser` is an optional function to be called with the input before storing it in the config
 
-`cliArguments` will gather all inputs after the last flag as an array at the given path.
+If a parser is provided, it should accept a string and return the value to be
+stored at `path`. Examples of common parsers are ParseInt, toLowerCase, splitList etc.
+
+
+#### cliArguments( *path* )
+
+Gathers all inputs after the last flag as an array at the given path.
  
 > input parameters are always attached to the flag to the left of them. After a `--` on the command line
 all inputs will be gathered into the arguments.
+
+#### cliUsage( *message *)
+
+Optionally, you can add a message regarding usage. It will appear with the help text as "Usage: *command* **your message**".
+
+#### cliOnHelp( *function *)
+
+Optionally, you can provide your own help handler. *function* will receive the help text as input.
+
+If you do not include an onHelp handler of your own, **pony-config** will log the help text
+to `stdout` and call `process.exit(0)`.
 
 ## Locking Config Against Changes
 Once the configuration is set, you can lock it against further changes.  Pass *true* to have change attempts throw an exception, or set { 'exceptionOnLocked' : true } in your config options.

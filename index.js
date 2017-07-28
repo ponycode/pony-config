@@ -18,7 +18,8 @@
     var fs = require('fs');
     var _ = require('lodash');
 	var fsCoalesce = require('fs-coalesce');
-	var CLI_FLAG_HELP = { path: "__cli_help", flags: ["h","help"], description: "Show usage" };
+	var path = require('path');
+
 
     // ----------------------------
     // Local dependencies
@@ -28,7 +29,9 @@
     var Config = require('./lib/Config');
     var arrayWrap = require('./lib/array-wrap');
 
-    // ----------------------------
+	var CLI_FLAG_HELP = { path: "__cli_help", flags: ["h","help"], description: "Show usage" };
+
+	// ----------------------------
     // Configuration State, Module-Global by design
     // ----------------------------
     var _config = new Config();
@@ -40,6 +43,7 @@
 	var _cliArgumentsPath = false;
 	var _locked = false;
 	var _onHelpCallback = false;
+	var _cliUsageMessage = false;
 
     // For Debug and Test - return state to initial, with optional alternative 'command line arguments'
     function _reset(){
@@ -273,13 +277,13 @@
 	}
 
 	function _cliUsage( message ){
-    	if( _.isString( message )) throw new Error( "CONFIG: cli usage requires a message string as input" );
-		_cliUsageMessage = message;
+    	if( !_.isString( message )) throw new Error( "CONFIG: cli usage requires a message string as input" );
+    	_cliUsageMessage = "Usage: " + path.basename( process.argv[1] ) + " " + message;
     	return this;
 	}
 
 	function _cliOnHelp( aFunction ){
-		if( _.isFunction( aFunction )) throw new Error( "CONFIG: cliOnHelp requires a function as input" );
+		if( !_.isFunction( aFunction )) throw new Error( "CONFIG: cliOnHelp requires a function as input" );
 		_onHelpCallback = aFunction;
 		return this;
 	}
@@ -348,19 +352,18 @@
 
 	function _cliHelpMessage(){
 		var output = "";
-		if( _cliUsageMessage ) output += _cliUsageMessage + "\n";
-		output += "Flags:";
+		if( _cliUsageMessage ) output += _cliUsageMessage + "\n\n";
+		output += "Flags:\n";
 		for( var i=0; i < _cliFlags.length; i++ ){
 			var opt = _cliFlags[i];
 			var flagsString = _flagsAsString( opt.flags );
 			if( opt.parameter ) flagsString += " " + opt.parameter;
 
-			output = "  " + _rpad( flagsString, 40 );
+			output += "  " + _rpad( flagsString, 40 );
 			if( opt.description !== undefined ) output += " " + opt.description;
 			if( opt.defaultValue !== undefined ) output += ", Default=" + opt.defaultValue;
 			output += "\n";
 		}
-		output += "\n";
 		return output;
 	}
 
