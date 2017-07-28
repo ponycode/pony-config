@@ -11,44 +11,37 @@ describe('cliConfig', function(){
 
 	describe('option formats', function(){
 		it('option with no dash works', function(){
-			config.options( { customCommandlineArguments : '-v version' });
-			config.cliFlag( 'version', 'v' ).cliParse();
+			config.cliFlag( 'version', 'v' ).cliParse('-v version');
 			assert.equal( 'version', config.get('version'), 'should be set');
 		});
 
 		it('option with dash works', function(){
-			config.options( { customCommandlineArguments : '-v version' });
-			config.cliFlag( 'version', '-v' ).cliParse();
+			config.cliFlag( 'version', '-v' ).cliParse('-v version');
 			assert.equal( 'version', config.get('version'), 'should be set');
 		});
 
 		it('option with short and long works using short', function(){
-			config.options( { customCommandlineArguments : '-v version' });
-			config.cliFlag( 'version', '-v, --version' ).cliParse();
+			config.cliFlag( 'version', '-v, --version' ).cliParse('-v version');
 			assert.equal( 'version', config.get('version'), 'should be set');
 		});
 
 		it('option with short and long works using long', function(){
-			config.options( { customCommandlineArguments : '--version version' });
-			config.cliFlag( 'version', '-v, --version' ).cliParse();
+			config.cliFlag( 'version', '-v, --version' ).cliParse('--version version');
 			assert.equal( 'version', config.get('version'), 'should be set');
 		});
 
 		it('option with array for backwards compatibility', function(){
-			config.options( { customCommandlineArguments : '--version version' });
-			config.cliFlag( 'version', ['-v', '--version'] ).cliParse();
+			config.cliFlag( 'version', ['-v', '--version'] ).cliParse('--version version');
 			assert.equal( 'version', config.get('version'), 'should be set');
 		});
 
 		it('option with extra whitespace works', function(){
-			config.options( { customCommandlineArguments : '--version version' });
-			config.cliFlag( 'version', '   -v, 	--version\n\r' ).cliParse();
+			config.cliFlag( 'version', '   -v, 	--version\n\r' ).cliParse('--version version');
 			assert.equal( 'version', config.get('version'), 'should be set');
 		});
 
 		it('accepts a parameter in option', function(){
-			config.options( { customCommandlineArguments : '--version version' });
-			config.cliFlag( 'version', '-v, --version [a-version]' ).cliParse();
+			config.cliFlag( 'version', '-v, --version [a-version]' ).cliParse('--version version');
 			assert.equal( 'version', config.get('version'), 'should be set');
 		});
 	});
@@ -60,15 +53,13 @@ describe('cliConfig', function(){
 		}
 
 		it('option works all parameters', function(){
-			config.options( { customCommandlineArguments : '--names joe,bob,tony' });
-			config.cliFlag( 'names', '-n, --names [name,...]', 'list of names', false, listParser ).cliParse();
+			config.cliFlag( 'names', '-n, --names [name,...]', 'list of names', false, listParser ).cliParse('--names joe,bob,tony');
 			var list = config.get('names');
 			assert.deepEqual( list, ['joe','bob','tony'] );
 		});
 
 		it('option works without optional default', function(){
-			config.options( { customCommandlineArguments : '--names joe,bob,tony' });
-			config.cliFlag( 'names', '-n, --names [name,...]', 'list of names', listParser ).cliParse();
+			config.cliFlag( 'names', '-n, --names [name,...]', 'list of names', listParser ).cliParse('--names joe,bob,tony');
 			var list = config.get('names');
 			assert.deepEqual( list, ['joe','bob','tony'] );
 		});
@@ -76,33 +67,29 @@ describe('cliConfig', function(){
 
 	describe("Gathers arguments", function(){
 		it('works without any options', function(){
-			config.options( { customCommandlineArguments : 'joe bob tony' });
-			config.cliArguments( 'names' ).cliParse();
+			config.cliArguments( 'names' ).cliParse('joe bob tony');
 			var list = config.get('names');
 			assert.deepEqual( list, ['joe','bob','tony'] );
 		});
 
 		it('works with options when none included', function(){
-			config.options( { customCommandlineArguments : 'joe bob tony' });
 			config.cliFlag( 'size', '-s, --size [meters]', 'size of it' );
-			config.cliArguments( 'names' ).cliParse();
+			config.cliArguments( 'names' ).cliParse('joe bob tony');
 			var list = config.get('names');
 			assert.deepEqual( list, ['joe','bob','tony'] );
 		});
 
 		it('works with options when used', function(){
-			config.options( { customCommandlineArguments : '--size 11 joe bob tony' });
 			config.cliFlag( 'size', '-s, --size [meters]', 'size of it' );
-			config.cliArguments( 'names' ).cliParse();
+			config.cliArguments( 'names' ).cliParse('--size 11 joe bob tony');
 			var list = config.get('names');
 			assert.deepEqual( list, ['joe','bob','tony'] );
 			assert.equal( 11, config.get('size'));
 		});
 
 		it('empty -- after all options marks beginning of arguments', function(){
-			config.options( { customCommandlineArguments : '-r -- joe bob tony' });
 			config.cliFlag( 'recurse', '-r', 'recurse if included' );
-			config.cliArguments( 'names' ).cliParse();
+			config.cliArguments( 'names' ).cliParse('-r -- joe bob tony');
 			var list = config.get('names');
 			assert.deepEqual( list, ['joe','bob','tony'] );
 			assert.equal( true, config.get('recurse'));

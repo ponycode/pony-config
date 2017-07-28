@@ -344,8 +344,11 @@ Turns on additional logging. Useful for tracing the loading of configuration fil
     o.noColor = true | false            turns on color logging (default is false)
     o.cloneWhenLocked = true | false    turns on cloning for get() when locked (defaults false)
     o.exceptionOnLocked = true | false  throw exception set or use called wheh locked (default is false)
-    o.customCommandlineArguments        argument string to use instead of process.argv (eg, "-v 1.04 -print -out file")
 
+### cliParse( **optional arguments string** )
+
+For debugging, you may pass a string of command line arguments to `cliParse`. Parsing
+will continue as though this string were the arguments on the command line.
 
 ### See Also
 **pony-config** uses

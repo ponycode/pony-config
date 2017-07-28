@@ -44,6 +44,7 @@
 	var _locked = false;
 	var _onHelpCallback = false;
 	var _cliUsageMessage = false;
+	var _alternativeCommandlineArguments = false;
 
     // For Debug and Test - return state to initial, with optional alternative 'command line arguments'
     function _reset(){
@@ -56,7 +57,8 @@
 		_cliArgumentsPath = false;
 		_onHelpCallback = false;
 		_cliUsageMessage = false;
-    }
+		_alternativeCommandlineArguments = false;
+	}
 
 	// ----------------------------
 	// lock config against changes
@@ -78,7 +80,6 @@
     //  exceptionOnLocked - throw exception on attempt to set property after lock
     //  cloneWhenLocked - return clones of all objects to enforce lock
     //  noColor - no color in list output
-    //  customCommandlineArguments - command line option string to use instead of process.args
 	//
     // ----------------------------
     function _setOptions( options ){
@@ -194,8 +195,8 @@
 	// ----------------------------
 	function _useRequire( module ){
 		if( _shouldApplyConfig( _whenEnvironments ) ){
-			var object = require( module );
-			_useObject( object );
+			var configData = require( module );
+			_config.set( '.', configData, _keySourceHintFrom( 'USE-RELEASE', optionalHint, _whenEnvironments) );
 		}
 		_whenEnvironments = false;
 		return this;
@@ -317,7 +318,8 @@
     	return this;
 	}
 
-	function _cliParse(){
+	function _cliParse( alternativeCommandlineArguments ){
+		_alternativeCommandlineArguments = alternativeCommandlineArguments;
 		if( _shouldApplyConfig( _whenEnvironments ) ){
 			_cliFlags.push( CLI_FLAG_HELP );
 			_processCommandLineArguments( _cliFlags );
@@ -372,7 +374,7 @@
 	// ----------------------------
 	function _parseCommandlineArguments( usageRules ){
 		usageRules = _santizedUsageRules( usageRules );
-		var options = { "arguments" : _options.customCommandlineArguments };
+		var options = { "arguments" : _alternativeCommandlineArguments };
 		_interpreter = new argv.Interpreter( usageRules, options );
 		return this;
 	}
