@@ -39,6 +39,7 @@
 	var _cliFlags = [];
 	var _cliArgumentsPath = false;
 	var _locked = false;
+	var _onHelpCallback = false;
 
     // For Debug and Test - return state to initial, with optional alternative 'command line arguments'
     function _reset(){
@@ -49,6 +50,8 @@
 	    _locked = false;
 		_cliFlags = [];
 		_cliArgumentsPath = false;
+		_onHelpCallback = false;
+		_cliUsageMessage = false;
     }
 
 	// ----------------------------
@@ -214,8 +217,7 @@
 		if( _cliArgumentsPath ) _config.set( _cliArgumentsPath, _interpreter.arguments, _keySourceHintFrom( 'USE-COMMAND-LINE' ), _whenEnvironments );
 
 		if( _getCommandlineValue( CLI_FLAG_HELP.path ) ){
-			_cliHelp();
-			process.exit(0);
+			return _cliPerformHelp();
 		}
 
 		for( var i=0; i < usageRules.length; i++ ){
@@ -261,6 +263,26 @@
 		};
 	}
 
+	function _cliPerformHelp(){
+    	let helpMessage = _cliHelpMessage();
+    	if( _onHelpCallback ) return _onHelpCallback( helpMessage );
+
+    	// Default help behavior
+    	console.log( helpMessage );
+    	process.exit(0);
+	}
+
+	function _cliUsage( message ){
+    	if( _.isString( message )) throw new Error( "CONFIG: cli usage requires a message string as input" );
+		_cliUsageMessage = message;
+    	return this;
+	}
+
+	function _cliOnHelp( aFunction ){
+		if( _.isFunction( aFunction )) throw new Error( "CONFIG: cliOnHelp requires a function as input" );
+		_onHelpCallback = aFunction;
+		return this;
+	}
 
     function _cliFlag( path, flags, description, optionalDefaultValue, optionalParser ){
 		if( path === undefined || flags == undefined ) throw new Error( "CONFIG: cli option requires path and flags parameters" );
@@ -324,20 +346,22 @@
 		return string;
 	}
 
-	function _cliHelp(){
-
-		console.log("Flags:\n");
+	function _cliHelpMessage(){
+		var output = "";
+		if( _cliUsageMessage ) output += _cliUsageMessage + "\n";
+		output += "Flags:";
 		for( var i=0; i < _cliFlags.length; i++ ){
 			var opt = _cliFlags[i];
 			var flagsString = _flagsAsString( opt.flags );
 			if( opt.parameter ) flagsString += " " + opt.parameter;
 
-			var output = "  " + _rpad( flagsString, 40 );
+			output = "  " + _rpad( flagsString, 40 );
 			if( opt.description !== undefined ) output += " " + opt.description;
 			if( opt.defaultValue !== undefined ) output += ", Default=" + opt.defaultValue;
-			console.log( output );
+			output += "\n";
 		}
-		console.log( "\n" );
+		output += "\n";
+		return output;
 	}
 
 	// ----------------------------
@@ -476,8 +500,10 @@
     exports.env = _env;
 	exports.cliFlag = _cliFlag;
 	exports.cliParse = _cliParse;
-	exports.cliHelp = _cliHelp;
+	exports.cliHelpMessage = _cliHelpMessage;
 	exports.cliArguments = _cliArguments;
+	exports.cliOnHelp = _cliOnHelp;
+	exports.cliUsage = _cliUsage;
     exports.get = _get;
     exports.set = _set;
     exports.list = _list;

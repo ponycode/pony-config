@@ -10,6 +10,13 @@ config
 .cliFlag( 'default', 			'-d [value]', 'Default value to use', 'a-default' )
 .cliFlag( 'json', 			'-j, --json [jsonString]', 'A json file input',  JSON.parse )
 .cliArguments( 'arguments' )
+.cliUsage( " [options] [-j json] -- filenames" )
+.onCliHelp( function( help ){
+	console.log( help );
+	console.log( "\nAccepts any number of arguments" );
+	console.log( "\njson body must be quoted and escaped" );
+	process.exit(0);
+})
 .cliParse();
 
 if( config.get('help')){
