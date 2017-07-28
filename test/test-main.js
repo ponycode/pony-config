@@ -325,3 +325,15 @@ describe('function', function(){
 	} );
 
 });
+
+
+describe('set', function(){
+    it( 'set controlled by when', function(){
+		config.useRuntimeEnvironment('Test Environment');
+		config.when( 'Wrong Environment' ).set('wrong', true );
+        config.when( 'Test Environment' ).set('right', true );
+
+        assert.equal( config.get('wrong'), undefined );
+        assert.equal( config.get('right'), true );
+    });
+});

@@ -4,6 +4,7 @@
 // License to distribute freely
 //
 // TODO
+// let user add on-help function of their own so we don't have to process.exit for them
 // log when set dot-path is extending objects
 // allow a key path for where a file or object is loaded
 // add debug mode to trace key overwrites (probably requires rewriting 'defaults')
@@ -17,6 +18,7 @@
     var fs = require('fs');
     var _ = require('lodash');
 	var fsCoalesce = require('fs-coalesce');
+	var CLI_FLAG_HELP = { path: "__cli_help", flags: ["h","help"], description: "Show usage" };
 
     // ----------------------------
     // Local dependencies
@@ -26,8 +28,6 @@
     var Config = require('./lib/Config');
     var arrayWrap = require('./lib/array-wrap');
 
-    var CLI_FLAG_HELP = { path: "help", flags: ["h","help"], description: "Show usage" };
-
     // ----------------------------
     // Configuration State, Module-Global by design
     // ----------------------------
@@ -36,7 +36,7 @@
     var _environment = false;               // by default no environment is selected
     var _whenEnvironments = false;
 	var _interpreter = false;
-	var _cliFlags = [ CLI_FLAG_HELP ];
+	var _cliFlags = [];
 	var _cliArgumentsPath = false;
 	var _locked = false;
 
@@ -47,7 +47,7 @@
         _environment = false;
         _whenEnvironments = false;
 	    _locked = false;
-		_cliFlags = [ CLI_FLAG_HELP ];
+		_cliFlags = [];
 		_cliArgumentsPath = false;
     }
 
@@ -208,11 +208,15 @@
     // ----------------------------
     // Set configuration from the command line
     // ----------------------------
-    function _useCommandLineArguments( usageRules ){
-		usageRules = _santizedUsageRules( usageRules );
+    function _processCommandLineArguments( usageRules ){
 		_parseCommandlineArguments( usageRules );
 
 		if( _cliArgumentsPath ) _config.set( _cliArgumentsPath, _interpreter.arguments, _keySourceHintFrom( 'USE-COMMAND-LINE' ), _whenEnvironments );
+
+		if( _getCommandlineValue( CLI_FLAG_HELP.path ) ){
+			_cliHelp();
+			process.exit(0);
+		}
 
 		for( var i=0; i < usageRules.length; i++ ){
 			var sourceHint = 'USE-COMMAND-LINE';
@@ -289,7 +293,8 @@
 
 	function _cliParse(){
 		if( _shouldApplyConfig( _whenEnvironments ) ){
-			_useCommandLineArguments( _cliFlags );
+			_cliFlags.push( CLI_FLAG_HELP );
+			_processCommandLineArguments( _cliFlags );
 		}
     	_whenEnvironments = false;
 		return this;
@@ -339,6 +344,7 @@
 	// Parse Commandline Arguments. Alternative to 'use'.  Parses command line without applying values to config
 	// ----------------------------
 	function _parseCommandlineArguments( usageRules ){
+		usageRules = _santizedUsageRules( usageRules );
 		var options = { "arguments" : _options.customCommandlineArguments };
 		_interpreter = new argv.Interpreter( usageRules, options );
 		return this;
@@ -385,7 +391,9 @@
             else console.error('CONFIG: Cannot modify config after locking' );
             return false;
         }
-        _config.set( configKeyPath, configValue, _keySourceHintFrom('SET', optionalHint, _whenEnvironments ));
+		if( _shouldApplyConfig( _whenEnvironments ) ){
+			_config.set( configKeyPath, configValue, _keySourceHintFrom( 'SET', optionalHint, _whenEnvironments ) );
+		}
         return this;
     }
 
