@@ -502,7 +502,7 @@
 	 */
     Config.prototype.list = function( options ){
         options = options || {};
-        if( options.noColor === undefined ) options.noColor = _options.noColor;
+        if( options.noColor === undefined ) options.noColor = this._options.noColor;
         if( options.outputStream === undefined ) options.outputStream = console.log;
 	    var chalk = require('chalk');
 		
@@ -573,7 +573,7 @@
 	    
         try{
             configFileData = JSON.parse( configFileContents );
-            if( _options.debug ) console.log('CONFIG: [' + _environment + '] Loaded config from file:', configFilePath );
+            if( this._options.debug ) console.log('CONFIG: [' + _environment + '] Loaded config from file:', configFilePath );
         } catch( error ){
             if( error.code !== 'ENOENT' ){		// file doesn't exist, skip it
                 console.error('CONFIG: Error reading file:', configFilePath, error );
