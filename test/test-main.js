@@ -304,13 +304,17 @@ describe('function', function(){
 		config.set('functionOneConfigResult', "not called" );
 		config.set('functionTwoConfigResult', "not called" );
 		function functionOne(){
-			config.set('functionOneConfigResult', true );
 			functionOneWasEvaluated++;
+		    return {
+				functionOneConfigResult: true
+            };
 		}
 
 		function functionTwo(){
-			config.set('functionTwoConfigResult', true );
 			functionTwoWasEvaluated++;
+			return {
+				functionTwoConfigResult: true
+			};
 		}
 
 		config.useRuntimeEnvironment('Test Environment');

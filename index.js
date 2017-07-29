@@ -26,136 +26,191 @@
     // ----------------------------
     var env = require('./lib/env');
     var argv = require('./lib/argv');
-    var Config = require('./lib/Config');
+    var ConfigStore = require('./lib/ConfigStore');
     var arrayWrap = require('./lib/array-wrap');
 
 	var CLI_FLAG_HELP = { path: "__cli_help", flags: ["h","help"], description: "Show usage" };
 
-	// ----------------------------
-    // Configuration State, Module-Global by design
-    // ----------------------------
-    var _config = new Config();
-    var _options = {};
-    var _environment = false;               // by default no environment is selected
-    var _whenEnvironments = false;
-	var _interpreter = false;
-	var _cliFlags = [];
-	var _cliArgumentsPath = false;
-	var _locked = false;
-	var _onHelpCallback = false;
-	var _cliUsageMessage = false;
-	var _alternativeCommandlineArguments = false;
+	/**
+	 * Configuration State, Module-Global by design
+	 *
+	 * @type {Config}
+	 * @private
+	 */
+	var _config = new Config();
 
-    // For Debug and Test - return state to initial, with optional alternative 'command line arguments'
-    function _reset(){
-        _config = new Config();
-        _options = {};
-        _environment = false;
-        _whenEnvironments = false;
-	    _locked = false;
-		_cliFlags = [];
-		_cliArgumentsPath = false;
-		_onHelpCallback = false;
-		_cliUsageMessage = false;
-		_alternativeCommandlineArguments = false;
+	function Config(){
+		this._configStore = new ConfigStore();
+		this._options = {};
+		this. _environment = false;               // by default no environment is selected
+		this._whenEnvironments = false;
+		this._interpreter = false;
+		this._cliFlags = [];
+		this._cliArgumentsPath = false;
+		this._locked = false;
+		this._onHelpCallback = false;
+		this._cliUsageMessage = false;
 	}
 
-	// ----------------------------
-	// lock config against changes
-	// ----------------------------
-	function _lock( exceptionOnLocked ){
-		_locked = true;
+	/**
+	 * For Debug and Test - return state to initial, with optional alternative command line arguments
+	 * @private
+	 */
+	Config.prototype.reset = function(){
+		this._configStore = new ConfigStore();
+		this._options = {};
+		this. _environment = false;               // by default no environment is selected
+		this._whenEnvironments = false;
+		this._interpreter = false;
+		this._cliFlags = [];
+		this._cliArgumentsPath = false;
+		this._locked = false;
+		this._onHelpCallback = false;
+		this._cliUsageMessage = false;
+	};
+
+	/**
+	 * lock against changes
+	 * @param exceptionOnLocked - if true throw exception on mutation attempt - slower
+	 */
+	Config.prototype.lock = function( exceptionOnLocked ){
+		this._locked = true;
 		if( exceptionOnLocked !== undefined ){
-			_options.exceptionOnLocked = exceptionOnLocked;
+			this._options.exceptionOnLocked = exceptionOnLocked;
 		}
-		if( _options.debug ){
+		if( this._options.debug ){
 			console.log("CONFIG: Locked");
 		}
-        _config.lock();
-	}
-	
-    // ----------------------------
-    // Options:
-    //  debug - logs configuration changes
-    //  exceptionOnLocked - throw exception on attempt to set property after lock
-    //  cloneWhenLocked - return clones of all objects to enforce lock
-    //  noColor - no color in list output
-	//
-    // ----------------------------
-    function _setOptions( options ){
-        _options = options || {};
-        return this;
-    }
-
-    // ----------------------------
-    // Environment Switching:
-    // Ignores config settings that aren't for the current environment
-    // ----------------------------
-
-    function _findRuntimeEnvironment( search ){
-        _environment = env.search( search );
-		if( !_options.caseSensitiveEnvironments && _.isString( _environment )) _environment = _environment.toUpperCase();
+		this._configStore.lock();
 		return this;
-    }
+	};
 
-    function _useRuntimeEnvironment( environment ){
-    	if( !_options.caseSensitiveEnvironments ) environment = environment.toUpperCase();
-        _environment = environment;
+	/**
+	 *
+	 * @param options
+	 *
+	 * Options:
+	 *  debug - logs configuration changes
+	 *  exceptionOnLocked - throw exception on attempt to set property after lock
+	 *  cloneWhenLocked - return clones of all objects to enforce lock
+	 *  noColor - no color in list output
+	 *
+	 * @return {Config}
+	 */
+	Config.prototype.options = function( options ){
+        this._options = options || {};
         return this;
-    }
+    };
 
-    function _getRuntineEnvironment(){
-        return _environment;
-    }
+	/**
+	 * Search for the runtime environment indicator
+	 * @param search - indicates where to search for env indicator
+	 * @return {Config}
+	 */
+    Config.prototype.findRuntimeEnvironment = function( search ){
+        this._environment = env.search( search );
+		if( !this._options.caseSensitiveEnvironments && _.isString( this._environment )) this._environment = this._environment.toUpperCase();
+		return this;
+    };
 
-    function _isEnvironment( environment ){
-		if( !_options.caseSensitiveEnvironments ) return ( environment.toUpperCase() === _environment.toUpperCase());
-		else return ( environment === _environment );
-	}
+	/**
+	 * Set the runtime environment
+	 * @param environment - string
+	 * @return {Config}
+	 *
+	 * @see findRuntimeEnvironment
+	 */
+	Config.prototype.useRuntimeEnvironment = function( environment ){
+		if( !_.isString( environment )) throw new Error("Environment must be a string");
+    	if( !this._options.caseSensitiveEnvironments ) environment = environment.toUpperCase();
+        this._environment = environment;
+        return this;
+    };
 
-    function _shouldApplyConfig( environments ){
-	    if( _locked ){
-		    if( _options.exceptionOnLocked ) throw Error( 'CONFIG: Cannot modify config after locking' );
+	/**
+	 * Returns the runtime environment that has been selected
+	 * @return {String} environment
+	 */
+	Config.prototype.getRuntimeEnvironment = function(){
+        return this._environment;
+    };
+
+	/**
+	 * Compares input to current selection
+	 *
+	 * Takes into account case sensitivity options @see setOptions
+	 *
+	 * @param environment
+	 * @return {boolean} true if environment matches selected environment
+	 */
+	Config.prototype.isRuntimeEnvironment = function( environment ){
+		if( !this._options.caseSensitiveEnvironments ) return ( environment.toUpperCase() === this._environment.toUpperCase());
+		else return ( environment === this._environment );
+	};
+
+	/**
+	 * Determine if the config operation should be applied
+	 * Based on locked state and environment comparison
+	 *
+	 * @see when clauses
+	 * @return {boolean} true if all conditions match
+	 * @private
+	 */
+	Config.prototype._shouldApplyConfig = function(){
+	    if( this._locked ){
+		    if( this._options.exceptionOnLocked ) throw Error( 'CONFIG: Cannot modify config after locking' );
 		    else console.error('CONFIG: Cannot modify config after locking' );
 		    return false;
 	    }
+	    var environments = this._whenEnvironments;
         if( environments === undefined || environments === false ) return true; // unspecified environments are always added
 
         environments = arrayWrap.wrap( environments );
 
         for( var i = 0; i < environments.length; i++){
             var env = environments[i];
-			if( !_options.caseSensitiveEnvironments ) env = env.toUpperCase();
-			if( env === _environment ){
+			if( !this._options.caseSensitiveEnvironments ) env = env.toUpperCase();
+			if( env === this._environment ){
                 return true;
             }
         }
 
         return false;
-    }
+    };
 
-    // ----------------------------
-    // When Clause - use to set environment context for useX commands
-    // ----------------------------
-    function _when( environments ){
-        _whenEnvironments = arrayWrap.wrap( environments );
-		if( !_options.caseSensitiveEnvironments ) _whenEnvironments = _.map( _whenEnvironments, function( e ){ return e.toUpperCase() });
+	/**
+	 * When Clause - use to set environment context for useX commands
+	 *
+	 * @param environments - process next function for these environments
+	 * @return {Config}
+	 */
+    Config.prototype.when = function( environments ){
+        this._whenEnvironments = arrayWrap.wrap( environments );
+		if( !this._options.caseSensitiveEnvironments ) this._whenEnvironments = _.map( this._whenEnvironments, function( e ){ return e.toUpperCase() });
         return this;
-    }
+    };
 
-    // ----------------------------
-    // Always Clause - use to set environment context for useX commands
-    // ----------------------------
-    function _always(){
-        _whenEnvironments = false;
+	/**
+	 * when - all environments
+	 * @see when
+	 * @return {Config}
+	 */
+	Config.prototype.always = function(){
+        this._whenEnvironments = false;
         return this;
-    }
+    };
 
 
-    // ----------------------------
-    // USE Clauses - Configuration sources
-    // ----------------------------
-
+	/**
+	 * construct a source hint for the ConfigStore
+	 * Hints are stored in the config to indicate source of applied changes
+	 *
+	 * @param method
+	 * @param source
+	 * @param environment
+	 * @return {string}
+	 * @private
+	 */
 	function _keySourceHintFrom( method, source, environment ){
 		var hints = [];
 		if( method ) hints.push( method );
@@ -167,85 +222,111 @@
 
 
 
-	// ----------------------------
-    // Set configuration from a file
-    // ----------------------------
-    function _useFile( configFileName ){
-        if( _shouldApplyConfig( _whenEnvironments ) ){
-            _loadAndApplyConfigFile( configFileName );
+	/**
+	 * Set configuration from a file conditional on the environment
+	 * @param configFileName
+	 * @return {Config}
+	 * @private
+	 */
+    Config.prototype.file = function( configFileName ){
+        if( this._shouldApplyConfig() ){
+			this._loadAndApplyConfigFile( configFileName );
         }
-        _whenEnvironments = false;
+        this._whenEnvironments = false;
         return this;
-    }
+    };
 
-	// ----------------------------
-	// Set configuration by evaluating a function conditional on the when clause
-	// ----------------------------
-	function _useFunction( aFunction ){
-		if( _shouldApplyConfig( _whenEnvironments ) ){
-			aFunction();
+	/**
+	 * Set configuration by evaluating a function conditional on the when clause
+	 * @param aFunction
+	 * @return {Config}
+	 */
+	Config.prototype.function = function( aFunction ){
+		if( !_.isFunction( aFunction )) throw new Error("input must be a function");
+		if( this._shouldApplyConfig() ){
+			this.object( aFunction(), "USE-FUNCTION" );
 		}
-		_whenEnvironments = false;
+		this._whenEnvironments = false;
 		return this;
-	}
+	};
 
 	// ----------------------------
 	// Set configuration by requiring a module and applying the object on the when clause
 	// NOTE: Caller should fully resolve path else require will attempt to locate relative to THIS module
 	// ----------------------------
-	function _useRequire( module ){
-		if( _shouldApplyConfig( _whenEnvironments ) ){
-			var configData = require( module );
-			_config.set( '.', configData, _keySourceHintFrom( 'USE-RELEASE', optionalHint, _whenEnvironments) );
+	/**
+	 * Set configuration by requiring a module and applying the object on the when clause
+	 *
+	 * Note: Caller should fully resolve path else require will attempt to locate relative to THIS module
+	 *
+	 * @param modulePath
+	 * @return {Config}
+	 */
+	Config.prototype.require = function( modulePath ){
+		if( this._shouldApplyConfig() ){
+			this.object( require( modulePath ), "USE-FUNCTION" );
 		}
-		_whenEnvironments = false;
+		this._whenEnvironments = false;
 		return this;
-	}
+	};
 
-    // ----------------------------
-    // Set configuration from an OS environment variable
-    // ----------------------------
-    function _env( key, envVariableName ){
-	    if( _shouldApplyConfig( _whenEnvironments ) && process.env[ envVariableName ] !== undefined ){
-            _config.set( key, process.env[ envVariableName ], _keySourceHintFrom( 'USE-ENVIRONMENT', envVariableName, _whenEnvironments) );
+	/**
+	 * Set configuration from an OS environment variable
+	 * @param key
+	 * @param envVariableName
+	 * @return {Config}
+	 */
+    Config.prototype.env = function( key, envVariableName ){
+	    if( process.env[ envVariableName ] !== undefined && this._shouldApplyConfig() ){
+            this._configStore.set( key, process.env[ envVariableName ], _keySourceHintFrom( 'USE-ENVIRONMENT', envVariableName, this._whenEnvironments) );
         }
-        _whenEnvironments = false;
+        this._whenEnvironments = false;
         return this;
-    }
+    };
 
-    // ----------------------------
-    // Set configuration from the command line
-    // ----------------------------
-    function _processCommandLineArguments( usageRules ){
-		_parseCommandlineArguments( usageRules );
+	/**
+	 * Set configuration from the command line arguments and cli flags
+	 * @param alternativeCommandlineArguments
+	 * @return {Config}
+	 */
+	Config.prototype.cliParse = function( alternativeCommandlineArguments ){
+		var interpreterOptions = {};
 
-		if( _cliArgumentsPath ) _config.set( _cliArgumentsPath, _interpreter.arguments, _keySourceHintFrom( 'USE-COMMAND-LINE' ), _whenEnvironments );
-
-		if( _getCommandlineValue( CLI_FLAG_HELP.path ) ){
-			return _cliPerformHelp();
+		if( alternativeCommandlineArguments ){
+			interpreterOptions.arguments = alternativeCommandlineArguments;
 		}
 
-		for( var i=0; i < usageRules.length; i++ ){
+		this._interpreter = new argv.Interpreter( this._cliFlags, interpreterOptions );
+
+		if( this._cliArgumentsPath ) this._configStore.set( this._cliArgumentsPath, this._interpreter.arguments, _keySourceHintFrom( 'USE-COMMAND-LINE' ), this._whenEnvironments );
+
+		for( var i=0; i < this._cliFlags.length; i++ ){
 			var sourceHint = 'USE-COMMAND-LINE';
-			var value = _getCommandlineValue( usageRules[i].path );
-			if( value === undefined && usageRules[i].defaultValue !== undefined ){
+			var value = this._getCommandlineValue( this._cliFlags[i].path );
+			if( value === undefined && this._cliFlags[i].defaultValue !== undefined ){
 				sourceHint += '(DEFAULT)';
-				value = usageRules[i].defaultValue;
+				value = this._cliFlags[i].defaultValue;
 			}
 			if( value !== undefined ){
-				if( usageRules[i].parser ){
+				if( this._cliFlags[i].parser ){
 					try{
-						value = usageRules[i].parser.call( null, value );
+						value = this._cliFlags[i].parser.call( null, value );
 					}catch( error ){
-						console.error( "Error parsing input for option: ", usageRules[i].flags );
+						console.error( "Error parsing input for option: ", this._cliFlags[i].flags );
 						value = undefined;
 					}
 				}
-				_config.set( usageRules[i].path, value, _keySourceHintFrom( sourceHint, usageRules[i].flags, _whenEnvironments) );
+				this._configStore.set( this._cliFlags[i].path, value, _keySourceHintFrom( sourceHint, this._cliFlags[i].flags, this._whenEnvironments) );
 			}
 		}
-        return this;
-    }
+		this._whenEnvironments = false;
+
+		if( this._getCommandlineValue( CLI_FLAG_HELP.path ) ){
+			this.cliPerformHelp();
+		}
+
+		return this;
+    };
 
     function _parseFlagsParameter( flags ){
     	var flagsComponent = flags;
@@ -268,28 +349,51 @@
 		};
 	}
 
-	function _cliPerformHelp(){
-    	let helpMessage = _cliHelpMessage();
-    	if( _onHelpCallback ) return _onHelpCallback( helpMessage );
+	/**
+	 * Either calls the user's onHelp callback or displays the help text and process.exit's
+	 * @return {*}
+	 */
+	Config.prototype.cliPerformHelp = function(){
+    	let helpMessage = this.cliHelpMessage();
+    	if( this._onHelpCallback ) return this._onHelpCallback( helpMessage );
 
     	// Default help behavior
     	console.log( helpMessage );
     	process.exit(0);
-	}
+	};
 
-	function _cliUsage( message ){
+	/**
+	 * Set the usage message
+	 * @param message
+	 * @return {Config}
+	 */
+	Config.prototype.cliUsage = function( message ){
     	if( !_.isString( message )) throw new Error( "CONFIG: cli usage requires a message string as input" );
-    	_cliUsageMessage = "Usage: " + path.basename( process.argv[1] ) + " " + message;
+    	this._cliUsageMessage = "Usage: " + path.basename( process.argv[1] ) + " " + message;
     	return this;
-	}
+	};
 
-	function _cliOnHelp( aFunction ){
+	/**
+	 * Set the onHelp callback
+	 * @param aFunction( string )
+	 * @return {Config}
+	 */
+	Config.prototype.cliOnHelp = function( aFunction ){
 		if( !_.isFunction( aFunction )) throw new Error( "CONFIG: cliOnHelp requires a function as input" );
-		_onHelpCallback = aFunction;
+		this._onHelpCallback = aFunction;
 		return this;
-	}
+	};
 
-    function _cliFlag( path, flags, description, optionalDefaultValue, optionalParser ){
+	/**
+	 *
+	 * @param path: String
+	 * @param flags: String or array of strings specifying command line flags
+	 * @param description: optional, String
+	 * @param optionalDefaultValue
+	 * @param optionalParser, (value) function(value)
+	 * @return {Config}
+	 */
+    Config.prototype.cliFlag = function( path, flags, description, optionalDefaultValue, optionalParser ){
 		if( path === undefined || flags == undefined ) throw new Error( "CONFIG: cli option requires path and flags parameters" );
 		if( _.isArray( flags ) ) flags = flags.join( ',' );
 
@@ -300,7 +404,7 @@
 
 		var flagsSpec = _parseFlagsParameter( flags );
 
-		var usageRule = {
+		var cliFlag = {
 			path: path,
 			flags: flagsSpec.flags,
 			parameter: flagsSpec.parameter,
@@ -309,24 +413,19 @@
 			parser: optionalParser
 		};
 
-		_cliFlags.push( usageRule );
+		this._cliFlags.push( cliFlag );
 		return this;
-	}
+	};
 
-	function _cliArguments( path ){
-		_cliArgumentsPath = path;
+	/**
+	 * Set path to store command line arguments that aren't matched to flags
+	 * @param path
+	 * @return {Config}
+	 */
+	Config.prototype.cliArguments = function( path ){
+		this._cliArgumentsPath = path;
     	return this;
-	}
-
-	function _cliParse( alternativeCommandlineArguments ){
-		_alternativeCommandlineArguments = alternativeCommandlineArguments;
-		if( _shouldApplyConfig( _whenEnvironments ) ){
-			_cliFlags.push( CLI_FLAG_HELP );
-			_processCommandLineArguments( _cliFlags );
-		}
-    	_whenEnvironments = false;
-		return this;
-	}
+	};
 
 	function _flagsAsString( flagsArray ){
 		var flagsAsStrings = [];
@@ -352,12 +451,12 @@
 		return string;
 	}
 
-	function _cliHelpMessage(){
+	Config.prototype.cliHelpMessage = function(){
 		var output = "";
-		if( _cliUsageMessage ) output += _cliUsageMessage + "\n\n";
+		if( this._cliUsageMessage ) output += this._cliUsageMessage + "\n\n";
 		output += "Flags:\n";
-		for( var i=0; i < _cliFlags.length; i++ ){
-			var opt = _cliFlags[i];
+		for( var i=0; i < this._cliFlags.length; i++ ){
+			var opt = this._cliFlags[i];
 			var flagsString = _flagsAsString( opt.flags );
 			if( opt.parameter ) flagsString += " " + opt.parameter;
 
@@ -367,33 +466,29 @@
 			output += "\n";
 		}
 		return output;
-	}
+	};
 
-	// ----------------------------
-	// Parse Commandline Arguments. Alternative to 'use'.  Parses command line without applying values to config
-	// ----------------------------
-	function _parseCommandlineArguments( usageRules ){
-		usageRules = _santizedUsageRules( usageRules );
-		var options = { "arguments" : _alternativeCommandlineArguments };
-		_interpreter = new argv.Interpreter( usageRules, options );
-		return this;
-	}
-
-	// ----------------------------
-    // Set configuration using an object
-    // ----------------------------
-    function _useObject( configData, optionalHint ){
-	    if( _shouldApplyConfig( _whenEnvironments ) ){
-            _config.set( '.', configData, _keySourceHintFrom( 'USE-OBJECT', optionalHint, _whenEnvironments) );
+	/**
+	 * Set configuration using an object
+	 *
+	 * @param configData
+	 * @param optionalHint
+	 * @return {Config}
+	 */
+    Config.prototype.object = function( configData, optionalHint ){
+	    if( this._shouldApplyConfig() ){
+            this._configStore.set( '.', configData, _keySourceHintFrom( 'USE-OBJECT', optionalHint, this._whenEnvironments) );
         }
-        _whenEnvironments = false;
+        this._whenEnvironments = false;
         return this;
-    }
+    };
 
-    // ----------------------------
-    // Log the current configuration
-    // ----------------------------
-    function _list( options ){
+	/**
+	 * Log the current configuration
+	 * @param options
+	 * @return {Config}
+	 */
+    Config.prototype.list = function( options ){
         options = options || {};
         if( options.noColor === undefined ) options.noColor = _options.noColor;
         if( options.outputStream === undefined ) options.outputStream = console.log;
@@ -402,119 +497,95 @@
 	    chalk.enabled = ! options.noColor;
 
         var header = chalk.white.bold('CONFIG');
-        if( _environment ) header += ': [' + chalk.green.bold( _environment ) + ']';
-        if( _locked ) header += ' [' + chalk.red.bold( 'LOCKED' ) + ']';
+        if( this._environment ) header += ': [' + chalk.green.bold( this._environment ) + ']';
+        if( this._locked ) header += ' [' + chalk.red.bold( 'LOCKED' ) + ']';
         options.outputStream( header );
 
-        _config.list( options );
+        this._configStore.list( options );
 
         return this;
-    }
+    };
 
-    // ----------------------------
-    // Set configuration using an dot-path key, eg. (tree.height, 25)
-    // ----------------------------
-    function _set( configKeyPath, configValue, optionalHint ){
-        if( _locked ){
-            if( _options.exceptionOnLocked ) throw Error( 'CONFIG: Cannot modify config after locking' );
+	/**
+	 * Set configuration using an dot-path key, eg. (tree.height, 25)
+	 * @param configKeyPath
+	 * @param configValue
+	 * @param optionalHint
+	 * @return {*}
+	 * @private
+	 */
+    Config.prototype.set = function( configKeyPath, configValue, optionalHint ){
+        if( this._locked ){
+            if( this._options.exceptionOnLocked ) throw Error( 'CONFIG: Cannot modify config after locking' );
             else console.error('CONFIG: Cannot modify config after locking' );
             return false;
         }
-		if( _shouldApplyConfig( _whenEnvironments ) ){
-			_config.set( configKeyPath, configValue, _keySourceHintFrom( 'SET', optionalHint, _whenEnvironments ) );
+		if( this._shouldApplyConfig() ){
+			this._configStore.set( configKeyPath, configValue, _keySourceHintFrom( 'SET', optionalHint, this._whenEnvironments ) );
 		}
         return this;
-    }
+    };
 
-    // ----------------------------
-    // Get config with a dot-path key, e.g., get( tree.height )
-    // ----------------------------
-    function _get( configKeyPath, defaultValue ){
-        var value = _config.get( configKeyPath, defaultValue );
-        if( _locked && _options.cloneWhenLocked ){
+	/**
+	 * Get config with a dot-path key, e.g., get( tree.height )
+	 * @param configKeyPath
+	 * @param defaultValue
+	 */
+    Config.prototype.get = function( configKeyPath, defaultValue ){
+        var value = this._configStore.get( configKeyPath, defaultValue );
+        if( this._locked && this._options.cloneWhenLocked ){
             if( ! (value instanceof Function) ){        // function mutability is strange, function may have state, and this preserves state
                 value = _.cloneDeep( value );
             }
         }
         return value;
-    }
+    };
 
-
-    // ----------------------------
-    // Helper to parse a config file
-    // ----------------------------
-    function _loadAndApplyConfigFile( configFileName ){
+	/**
+	 * Helper to parse a config file.
+	 *
+	 * If input is an array of paths, will parse the first file found
+	 *
+	 * File need not exist
+	 *
+	 * @param configFilePath or Array:configFilePaths
+	 * @private
+	 */
+    Config.prototype._loadAndApplyConfigFile = function( configFilePath ){
         var configFileData = false;
 
-	    var configFileNameArray = arrayWrap.wrap( configFileName );
+	    var configFileNameArray = arrayWrap.wrap( configFilePath );
 	    var configFileContents = fsCoalesce.readFirstFileToExistSync( configFileNameArray );
 	    
 	    if( !configFileContents ) return;
 	    
         try{
             configFileData = JSON.parse( configFileContents );
-            if( _options.debug ) console.log('CONFIG: [' + _environment + '] Loaded config from file:', configFileName );
+            if( _options.debug ) console.log('CONFIG: [' + _environment + '] Loaded config from file:', configFilePath );
         } catch( error ){
             if( error.code !== 'ENOENT' ){		// file doesn't exist, skip it
-                console.error('CONFIG: Error reading file:', configFileName, error );
+                console.error('CONFIG: Error reading file:', configFilePath, error );
             }
         }
 
         if( configFileData ){
-            _config.set( '.', configFileData, _keySourceHintFrom( 'USE-FILE', configFileName, _whenEnvironments ));
+        	this.object( configFileData, 'USE-FILE' );
         }
-    }
+    };
 
-	// ----------------------------
-	// Fetch the value of a command line argument by config key path without applying it to the config
-	// ----------------------------
-	function _getCommandlineValue( configKeyPath ){
-		if( ! _interpreter ) {
+	/**
+	 * Fetch the value of a command line argument by config key path without applying it to the config
+	 * @param configKeyPath
+	 * @return {*}
+	 * @private
+	 */
+	Config.prototype._getCommandlineValue = function( configKeyPath ){
+		if( ! this._interpreter ) {
 			console.warn( "CONFIG: call parseCommandlineArguments( usage ) before getCommandlineValue" );
 			return undefined;
 		}
-		return _interpreter.values[ configKeyPath ];
-	}
+		return this._interpreter.values[ configKeyPath ];
+	};
 
-	// ----------------------------
-	// Sanitize - and -- from usage rules
-	// ----------------------------
-	function _santizedUsageRules( usageRules ){
-		usageRules = arrayWrap.wrap( usageRules );
-		for( var i=0; i < usageRules.length; i++ ){
-			var flags = arrayWrap.wrap( usageRules[i].flags );
-			for( var j=0; j < flags.length; j++ ){
-				flags[j] = flags[j].split('-').join('');		// remove all dashes
-			}
-			usageRules[i].flags = flags;
-		}
-		return usageRules;
-	}
-
-	// ----------------------------
-    // Expose public functions
-    // ----------------------------
-    exports.options = _setOptions;
-    exports.findRuntimeEnvironment = _findRuntimeEnvironment;
-    exports.getRuntimeEnvironment = _getRuntineEnvironment;
-    exports.useRuntimeEnvironment = _useRuntimeEnvironment;
-    exports.when = _when;
-    exports.always = _always;
-    exports.file = _useFile;
-    exports.object = _useObject;
-    exports.env = _env;
-	exports.cliFlag = _cliFlag;
-	exports.cliParse = _cliParse;
-	exports.cliHelpMessage = _cliHelpMessage;
-	exports.cliArguments = _cliArguments;
-	exports.cliOnHelp = _cliOnHelp;
-	exports.cliUsage = _cliUsage;
-    exports.get = _get;
-    exports.set = _set;
-    exports.list = _list;
-    exports.reset = _reset;
-	exports.lock = _lock;
-	exports.isRuntimeEnvironment = _isEnvironment;
-	exports.function = _useFunction;
-	exports.require = _useRequire;
+	module.exports = _config;
 })();

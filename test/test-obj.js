@@ -1,6 +1,6 @@
 var assert = require("assert");
 
-var Config = require('../lib/Config');
+var Config = require('../lib/ConfigStore');
 var config;
 
 beforeEach( function(){
