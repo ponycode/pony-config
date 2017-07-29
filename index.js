@@ -24,7 +24,7 @@
     // ----------------------------
     // Local dependencies
     // ----------------------------
-    var env = require('./lib/env');
+    var envSearch = require('./lib/env-search');
     var argv = require('./lib/argv');
     var ConfigStore = require('./lib/ConfigStore');
     var arrayWrap = require('./lib/array-wrap');
@@ -42,7 +42,7 @@
 	function Config(){
 		this._configStore = new ConfigStore();
 		this._options = {};
-		this. _environment = false;               // by default no environment is selected
+		this._environment = false;               // by default no environment is selected
 		this._whenEnvironments = false;
 		this._interpreter = false;
 		this._cliFlags = [];
@@ -59,7 +59,7 @@
 	Config.prototype.reset = function(){
 		this._configStore = new ConfigStore();
 		this._options = {};
-		this. _environment = false;               // by default no environment is selected
+		this._environment = false;               // by default no environment is selected
 		this._whenEnvironments = false;
 		this._interpreter = false;
 		this._cliFlags = [];
@@ -108,7 +108,7 @@
 	 * @return {Config}
 	 */
     Config.prototype.findRuntimeEnvironment = function( search ){
-        this._environment = env.search( search );
+        this._environment = envSearch( search );
 		if( !this._options.caseSensitiveEnvironments && _.isString( this._environment )) this._environment = this._environment.toUpperCase();
 		return this;
     };
@@ -157,25 +157,28 @@
 	 * @private
 	 */
 	Config.prototype._shouldApplyConfig = function(){
-	    if( this._locked ){
-		    if( this._options.exceptionOnLocked ) throw Error( 'CONFIG: Cannot modify config after locking' );
+		var self = this;
+	    if( self._locked ){
+		    if( self._options.exceptionOnLocked ) throw Error( 'CONFIG: Cannot modify config after locking' );
 		    else console.error('CONFIG: Cannot modify config after locking' );
 		    return false;
 	    }
-	    var environments = this._whenEnvironments;
+	    var environments = self._whenEnvironments;
         if( environments === undefined || environments === false ) return true; // unspecified environments are always added
 
         environments = arrayWrap.wrap( environments );
 
-        for( var i = 0; i < environments.length; i++){
-            var env = environments[i];
-			if( !this._options.caseSensitiveEnvironments ) env = env.toUpperCase();
-			if( env === this._environment ){
-                return true;
-            }
-        }
+        var match = false;
 
-        return false;
+        _.each( environments, function( env ){
+			if( !self._options.caseSensitiveEnvironments ) env = env.toUpperCase();
+			if( env === self._environment ){
+				match = true;
+				return false;
+			}
+		});
+
+        return match;
     };
 
 	/**
@@ -290,35 +293,39 @@
 	 * @return {Config}
 	 */
 	Config.prototype.cliParse = function( alternativeCommandlineArguments ){
+		var self = this;
 		var interpreterOptions = {};
 
 		if( alternativeCommandlineArguments ){
 			interpreterOptions.arguments = alternativeCommandlineArguments;
 		}
 
-		this._interpreter = new argv.Interpreter( this._cliFlags, interpreterOptions );
+		self._interpreter = new argv.Interpreter( self._cliFlags, interpreterOptions );
 
-		if( this._cliArgumentsPath ) this._configStore.set( this._cliArgumentsPath, this._interpreter.arguments, _keySourceHintFrom( 'USE-COMMAND-LINE' ), this._whenEnvironments );
+		if( self._cliArgumentsPath ){
+			self._configStore.set( self._cliArgumentsPath, self._interpreter.arguments, _keySourceHintFrom( 'USE-COMMAND-LINE' ), self._whenEnvironments );
+		}
 
-		for( var i=0; i < this._cliFlags.length; i++ ){
+		_.each( this._cliFlags, function( flagSpec ){
 			var sourceHint = 'USE-COMMAND-LINE';
-			var value = this._getCommandlineValue( this._cliFlags[i].path );
-			if( value === undefined && this._cliFlags[i].defaultValue !== undefined ){
+			var value = self._getCommandlineValue( flagSpec.path );
+			if( value === undefined && flagSpec.defaultValue !== undefined ){
 				sourceHint += '(DEFAULT)';
-				value = this._cliFlags[i].defaultValue;
+				value = flagSpec.defaultValue;
 			}
 			if( value !== undefined ){
-				if( this._cliFlags[i].parser ){
+				if( flagSpec.parser ){
 					try{
-						value = this._cliFlags[i].parser.call( null, value );
+						value = flagSpec.parser.call( null, value );
 					}catch( error ){
-						console.error( "Error parsing input for option: ", this._cliFlags[i].flags );
+						console.error( "Error parsing input for option: ", flagSpec.flags );
 						value = undefined;
 					}
 				}
-				this._configStore.set( this._cliFlags[i].path, value, _keySourceHintFrom( sourceHint, this._cliFlags[i].flags, this._whenEnvironments) );
+				self._configStore.set( flagSpec.path, value, _keySourceHintFrom( sourceHint, flagSpec.flags, self._whenEnvironments) );
 			}
-		}
+		});
+
 		this._whenEnvironments = false;
 
 		if( this._getCommandlineValue( CLI_FLAG_HELP.path ) ){
@@ -427,44 +434,38 @@
     	return this;
 	};
 
-	function _flagsAsString( flagsArray ){
+	function _flagsAsSantizedString( flagsArray ){
 		var flagsAsStrings = [];
-		for( var i=0; i < flagsArray.length; i++ ){
-			var flagsChars = flagsArray[i];
-			if( flagsChars.length === 1 ) flagsAsStrings.push( "-" + flagsChars );
-			else flagsAsStrings.push( "--" + flagsChars );
-		}
+		_.each( flagsArray, function( flag ){
+			if( flag.length === 1 ) flagsAsStrings.push( "-" + flag );
+			else flagsAsStrings.push( "--" + flag );
+		});
 		return flagsAsStrings.join(", ");
 	}
 
-	var PAD = "                                                                                                   ";
+	function _flagUsageLine( cliFlagSpec ){
+		var line = "";
+		var flagsString = _flagsAsSantizedString( cliFlagSpec.flags );
+		if( cliFlagSpec.parameter ) flagsString += " " + cliFlagSpec.parameter;
 
-	function _lpad( string, padTo ){
-		var padWidth = padTo - string.length;
-		if( padWidth > 0 ) string = PAD.substring( 0, padWidth ) + string;
-		return string;
-	}
-
-	function _rpad( string, padTo ){
-		var padWidth = padTo - string.length;
-		if( padWidth > 0 ) string = string + PAD.substring( 0, padWidth );
-		return string;
+		line += "  " + _.padStart( flagsString, 40 );
+		if( cliFlagSpec.description !== undefined ) line += " " + cliFlagSpec.description;
+		if( cliFlagSpec.defaultValue !== undefined ) line += ", Default='" + cliFlagSpec.defaultValue + "'";
+		line += "\n";
+		return line;
 	}
 
 	Config.prototype.cliHelpMessage = function(){
+		var self = this;
 		var output = "";
-		if( this._cliUsageMessage ) output += this._cliUsageMessage + "\n\n";
-		output += "Flags:\n";
-		for( var i=0; i < this._cliFlags.length; i++ ){
-			var opt = this._cliFlags[i];
-			var flagsString = _flagsAsString( opt.flags );
-			if( opt.parameter ) flagsString += " " + opt.parameter;
+		if( self._cliUsageMessage ) output += self._cliUsageMessage + "\n\n";
 
-			output += "  " + _rpad( flagsString, 40 );
-			if( opt.description !== undefined ) output += " " + opt.description;
-			if( opt.defaultValue !== undefined ) output += ", Default=" + opt.defaultValue;
-			output += "\n";
-		}
+		output += "Flags:\n";
+
+		_.each( this._cliFlags, function( cliFlagSpec ){
+			output += _flagUsageLine( cliFlagSpec );
+		});
+
 		return output;
 	};
 
