@@ -38,6 +38,16 @@
 	 * @private
 	 */
 	var _config = new Config();
+	Object.defineProperty( _config, '_configStore', { enumerable: false });
+	Object.defineProperty( _config, '_options', { enumerable: false });
+	Object.defineProperty( _config, '_environment', { enumerable: false });
+	Object.defineProperty( _config, '_whenEnvironments', { enumerable: false });
+	Object.defineProperty( _config, '_interpreter', { enumerable: false });
+	Object.defineProperty( _config, '_cliFlags', { enumerable: false });
+	Object.defineProperty( _config, '_cliArgumentsPath', { enumerable: false });
+	Object.defineProperty( _config, '_locked', { enumerable: false });
+	Object.defineProperty( _config, '_onHelpCallback', { enumerable: false });
+	Object.defineProperty( _config, '_cliUsageMessage', { enumerable: false });
 
 	function Config(){
 		this._configStore = new ConfigStore();
@@ -51,6 +61,7 @@
 		this._onHelpCallback = false;
 		this._cliUsageMessage = false;
 	}
+
 
 	/**
 	 * For Debug and Test - return state to initial, with optional alternative command line arguments
