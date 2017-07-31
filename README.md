@@ -9,7 +9,7 @@ Versatile, Predictable Configuration
 #### Sources are merged predictably
 - Config propertes are extended and replaced recursively
 - Powerful debug trace of each config value's source
-- Makes it easy to set defaults, load common configuration, and finally override with environment specific values.
+- Makes it easy to set defaults, load common configurations, and override with environment specific config.
 
 #### Configuration can be combined from many sources
 - JSON files
@@ -52,11 +52,15 @@ config.set('verified', true);
 - [Accessors](#accessors)
   - [get( *path*, *[default value]* )](#get-path-default-value-)
   - [set( *path*, *value* )](#set-path-value-)
-- [Load a Configuration Source](#load-a-configuration-source)
+- [Applying Configurations](#applying-configurations)
   - [object( *object* )](#object-object-)
   - [file( *filepath* )](#file-filepath-)
   - [env( *path*, *variable name* )](#env-path-variable-name-)
   - [cliParse()](#cliparse)
+    - [cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`](#cliflag-path-flags-description-default-value-opt_parser-)
+    - [cliArguments( *path* )](#cliarguments-path-)
+    - [cliUsage( *message *)](#cliusage-message-)
+    - [cliOnHelp( *function *)](#clionhelp-function-)
 - [Locking Config Against Changes](#locking-config-against-changes)
 - [Merging Configuration Sources](#merging-configuration-sources)
 - [Run-time Environment Configuration](#run-time-environment-configuration)
@@ -65,13 +69,14 @@ config.set('verified', true);
     - [useRuntimeEnvironment( *key* )](#useruntimeenvironment-key-)
     - [isRuntimeEnvironment( *environment* )](#isruntimeenvironment-environment-)
     - [getRuntimeEnvironment()](#getruntimeenvironment)
-  - [Declare Which Configurations to Apply](#declare-which-configurations-to-apply)
+  - [Selectively Applying Configurations](#selectively-applying-configurations)
     - [when( *key* | *[keys]* )](#when-key--keys-)
     - [always()](#always)
 - [Debugging](#debugging)
   - [list( options )](#list-options-)
   - [reset()](#reset)
   - [options( o );](#options-o-)
+  - [cliParse( **optional arguments string** )](#cliparse-optional-arguments-string-)
   - [See Also](#see-also)
   - [Tests](#tests)
   - [Test Coverage (via istanbul.js)](#test-coverage-via-istanbuljs)
@@ -102,13 +107,12 @@ config.set( "name.first", "Michael" );      // will create or modify { name : { 
 config.set( "name", { first : "Michael" );  // same as above, creating sub-paths as needed, extending existing sub-paths
 ```
 
-## Load a Configuration Source
+## Applying Configurations
 
-Configuration sources are loaded via the `use` functions.  As configuration sources are loaded, they replace or extend
-previously loaded values.
+Configuration sources are applied via the following functions. As configuration sources are applied, new values will replace or extend previously applied values at the same key paths.
 
 ### object( *object* )
-This is useful for creating a default configuration.  The object will be loaded at the root of the configuration.
+Useful for creating a default configuration, the object will be applied at the root of the configuration.
 
 ```javascript
 config.object({
@@ -123,13 +127,12 @@ config.object({
 
 ### file( *filepath* )
 
-Configuration files are JSON files, and their contents are loaded to the root config object.
-If the file doesn't exist it will be ignored.
+Applies the contents of a `JSON` file found at the filepath. If the file doesn't exist the config is unchanged.
 
 
 ### env( *path*, *variable name* )
 
-Variables from process.env can be accessed by name, and stored using the dot path.
+Variables from process.env can be accessed by name, and their contents stored at the given key path.
 If the environmnet variable isn't found, the config is unchanged.
 
 ```javascript
@@ -137,9 +140,9 @@ config.env( "settings.server.port", "PORT");
 var port = config.get( "settings.server.port" );
 ```
 
-### CliParse()
+### cliParse()
 
-Configuration be loaded from the commandline and combined with the rest of your config. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and values are added at dot-paths in the configuration.
+Configuration can be applied from the commandline and combined with the rest of your config. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and values are added at dot-paths in the configuration.
 
 Commandline parsing can be conditional on the runtime environment. For example `config.when('dev').cliParse()`.
 
@@ -216,7 +219,7 @@ config objects (with the exception of functions, which are returned without clon
 Cloning comes with the cost of memory and cloning-time for each request, so consider the real risk and likelihood of mutations in your code before using *cloneWhenLocked*.
 
 ## Merging Configuration Sources
-Each configuration source is loaded at the config root. When another node is added
+Each configuration source is applied at the config root. When another node is added
 with an identical key path, it is merged with the previous node at that location. You can apply increasingly specific configurations at any depth
 
 For example,
@@ -240,31 +243,31 @@ Results in
 
 ## Run-time Environment Configuration
 
-Often it's necessary to load a slightly different configuration for each of your run-time environments. **pony-config** does this in two steps.
+Often it's necessary to apply different configurations in each of your run-time environments.
 
-- Tell **pony-config** how to determine the run-time environment
-- Indicate which configuration sources are to be loaded for which environments
+1. Tell **pony-config** how to determine the run-time environment
+2. Indicate which configuration sources are to be applied for which environments
 
-Configuration sources that aren't needed for the current environment are ignored, so you can declare all of your configuration sources in your main script file and let **pony-config** apply the right ones at run-time.
+Configuration sources that aren't needed for the current environment are ignored, so you can declare all of your configuration sources at the top of your app and let **pony-config** apply the right ones at run-time.
 
 ### Determining the Run-time Environment
-**pony-config** can determine the run-time environment by searching for two kinds of environment determinants: files and environment variables. Environment variables are available on most platforms, and file determinants are provided for platforms that lack configurable environments or shells.
+**pony-config** can determine the run-time environment by searching for two kinds of environment determinants: files and environment variables. Environment variables are available on most platforms and are the most convenient. File determinants are provided for platforms that lack configurable environments variables or shells.
 
-File Determinants are text files containing a string that will be the key.  For example, a file named ".env-file' may contain the string 'prod'.
+A file Determinant is simply a text file containing a string.  For example, a file named ".env-file' containing the string 'prod'.
 
 #### findRuntimeEnvironment( *options* )
 1. Looks in options.**var** for the name of an environment variable.
-2. If the environment variable exists, uses its value as the key and exits
-3. Looks in options.**path** for a file path, or an array of file paths.
-4. Looks for a file at each path, in order.
-5. If the file exists, uses its contents as the key and exits
-6. Looks in options.**default** for a value.
-7. If it is set, uses its value as the key and exits
-8. If no environment key is found, returns false, and the *pony-config* continues as though no environment were set
+	a. If the environment variable exists, uses its value as the key and exits
+2. Looks in options.**path** for a file path, or an array of file paths.
+	a. Looks for a file at each path, in order.
+	b. If the file exists, uses its contents as the key and exits
+3. Looks in options.**default** for a value.
+	a. If it is set, uses its value as the key and exits
+	b. If no environment key is found, returns false, and the *pony-config* continues as though no environment were set
 
-If options.**debug**=true, the search will be logged to console.log
+Include `options.debug=true` to log the search progress to through `console.log`.
 
-Path may include **~** to represent user home directory
+> **pony-config** file paths may **~** to represent the users home directory.
 
 Example
 ```javascript
@@ -272,26 +275,26 @@ config.findRuntimeEnvironment( { paths:['~/.env', './env-file'], env: 'ENVIRONME
 ```
 
 #### useRuntimeEnvironment( *key* )
-Alternatively, if you have another way to determine your run-time environment, you can simply set the environment key directly.  You must set the environment **before** calling any *use* configuration functions.
+If you have another way to determine your run-time environment, you can simply set the environment key directly.
 
 ```javascript
 config.useRuntimeEnvironment('prod');
 ```
 
 #### isRuntimeEnvironment( *environment* )
-Use to test the run-time environment that was resolved by pony-config. Takes into account case sensitivity options. The default
-is case-insensitivity.
+You can check the run-time environment that was resolved by **pony-config**. Takes into account case sensitivity options. The default
+is case-insensitive comparison.
 
 #### getRuntimeEnvironment()
-Returns the current environment key.  Returns ```false``` is no environment key has been set.
+Returns the current environment key. Returns ```false``` is no environment key has been set.
 
 
-### Declare Which Configurations to Apply
+### Selectively Applying Configurations
 
-*NOTE:* Environments are case insensitive unless `options( { caseSensitiveEnvironments: false } )` is called.
+*NOTE:* Environment keys are case-insensitive unless `config.options()` is called with `caseSensitiveEnvironments: false`.
 
 #### when( *key* | *[keys]* )
-Use the *when* clause to indicate which environments should load the source.  In any other environment, the source will be ignored. If no **when** clause is used, the source will be loaded in every environment.  A **when** clause is in effect until a **use** method is applied.
+Use the *when* clause to indicate which environments should apply the source.  In any other environment, the source will be ignored. If no **when** clause is used, the source will be applied in every environment.  A **when** clause is in effect only for the next apply function.
 
 ```javascript
 config.when('prod').file('productionConfig.json');
@@ -299,7 +302,7 @@ config.when(['prod','stage']).object({ database : 'mongodb' });
 ```
 
 #### always()
-Always load the configuration source.  This is the default, but it is sometimes helpful to be explicit.
+Always apply the configuration source. This is the default, but it is sometimes helpful to be explicit.
 
 ```javascript
 config.always().file( 'common.json' });
@@ -340,7 +343,7 @@ The output looks like:
 Used in tests, reset clears the Config for reusing an object
 
 ### options( o );
-Turns on additional logging. Useful for tracing the loading of configuration files and environment search.
+Turns on additional logging. Useful for tracing the applying of configuration files and environment search.
 
     o.debug = true | false              turns on logging (default is false)
     o.noColor = true | false            turns on color logging (default is false)
