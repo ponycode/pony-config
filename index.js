@@ -372,7 +372,7 @@
 	 * @return {*}
 	 */
 	Config.prototype.cliPerformHelp = function(){
-    	let helpMessage = this.cliHelpMessage();
+    	var helpMessage = this.cliHelpMessage();
     	if( this._onHelpCallback ) return this._onHelpCallback( helpMessage );
 
     	// Default help behavior
