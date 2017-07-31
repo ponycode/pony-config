@@ -1,5 +1,7 @@
 # pony-config
 
+[![Build Status](https://travis-ci.org/ponycode/pony-config.svg?branch=master)](https://travis-ci.org/ponycode/pony-config)
+
 > Ver 2.0.0 introduces breaking API changes
 
 Versatile, Predictable Configuration
