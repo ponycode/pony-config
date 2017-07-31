@@ -6,6 +6,7 @@
   "scripts": {
     "test": "mocha test ; ./node_modules/istanbul/lib/cli.js cover _mocha -- ./test",
     "coverage": "./node_modules/istanbul/lib/cli.js cover _mocha -- ./test",
+    "cov": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "doctoc": "doctoc --guthub ."
   },
   "repository": {
@@ -29,6 +30,7 @@
   },
   "homepage": "https://github.com/ponycode/pony-config",
   "devDependencies": {
+    "coveralls": "^2.13.1",
     "expect": "~1.6.0",
     "grunt": "~0.4.5",
     "grunt-contrib-jshint": "^0.11.2",
