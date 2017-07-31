@@ -1,6 +1,7 @@
 # pony-config
 
 [![Build Status](https://travis-ci.org/ponycode/pony-config.svg?branch=master)](https://travis-ci.org/ponycode/pony-config)
+[![Coverage Status](https://coveralls.io/repos/github/ponycode/pony-config/badge.svg?branch=master)](https://coveralls.io/github/ponycode/pony-config?branch=master)
 
 > Ver 2.0.0 introduces breaking API changes
 
