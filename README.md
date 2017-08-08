@@ -58,11 +58,14 @@ config.set('verified', true);
   - [object( *object* )](#object-object-)
   - [file( *filepath* )](#file-filepath-)
   - [env( *path*, *variable name* )](#env-path-variable-name-)
+- [Command Line Interfaces](#command-line-interfaces)
+  - [cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`](#cliflag-path-flags-description-default-value-opt_parser-)
+  - [cliArguments( *path* )](#cliarguments-path-)
   - [cliParse()](#cliparse)
-    - [cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`](#cliflag-path-flags-description-default-value-opt_parser-)
-    - [cliArguments( *path* )](#cliarguments-path-)
-    - [cliUsage( *message *)](#cliusage-message-)
-    - [cliOnHelp( *function *)](#clionhelp-function-)
+  - [Command Line Help](#command-line-help)
+    - [cliUsage( *message* )](#cliusage-message-)
+    - [cliOnHelp( *function* )](#clionhelp-function-)
+    - [cliHelpMessage()](#clihelpmessage)
 - [Locking Config Against Changes](#locking-config-against-changes)
 - [Merging Configuration Sources](#merging-configuration-sources)
 - [Run-time Environment Configuration](#run-time-environment-configuration)
@@ -77,11 +80,10 @@ config.set('verified', true);
 - [Debugging](#debugging)
   - [list( options )](#list-options-)
   - [reset()](#reset)
-  - [options( o );](#options-o-)
+  - [options( *o* )](#options-o-)
   - [cliParse( **optional arguments string** )](#cliparse-optional-arguments-string-)
   - [See Also](#see-also)
   - [Tests](#tests)
-  - [Test Coverage (via istanbul.js)](#test-coverage-via-istanbuljs)
   - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -142,19 +144,23 @@ config.env( "settings.server.port", "PORT");
 var port = config.get( "settings.server.port" );
 ```
 
-### cliParse()
+## Command Line Interfaces
 
-Configuration can be applied from the commandline and combined with the rest of your config. Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist), and values are added at dot-paths in the configuration.
+Configuration can be applied from the commandline and combined with the rest of your config.
+Arguments are parsed from process.argv by [minimist.js](https://www.npmjs.com/package/minimist),
+and values are added at dot-paths in the configuration.
 
-Commandline parsing can be conditional on the runtime environment. For example `config.when('dev').cliParse()`.
 
-A help flag is defined for you as `-h, --help`. The flags, descriptions and defaults will be output to stdout.
+- short and long options, with or without arguments eg. `-a, --append [filepath]`
+- optionally provide a parser for arguments, eg. `--nums=1,2,3,4` -> `[1,2,3,4]`
+- store command line arguments in the config
+- supports varadic arguments at the end of the command line, e.g. `print --size=200 file1 file2`
+- built in help flags, -h and --help
 
-**An Example:**
+**Example**
 
-```bash
-funnyprogram -w 650 -a -- hamster.jpg
-```
+`funnyprogram -w 650 -a -- hamster.jpg`
+
 ```javascript
 config
 .cliFlag( "settings.width", "-w, --width [1280]", "resize image to fit width in pixels", false },
@@ -170,11 +176,8 @@ config
 .cliParse()
 ```
 
-> Input of negative numbers is problematic on a command line, as the *-* is interpreted as a flag. This enables
-> the use of numerals as flags (eg, -9). The safest way to accept negative input is to use an _equals_ as follows:
-> `--value=-9`
 
-#### cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`
+### cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`
 
 - `path` is the config path to store the value
 - `flags` is a comma separated list of the flags for this parameter
@@ -185,26 +188,58 @@ config
 If a parser is provided, it should accept a string and return the value to be
 stored at `path`. Examples of common parsers are ParseInt, toLowerCase, splitList etc.
 
+> Input of negative numbers is problematic on a command line, because the *dash* is first interpreted as a flag. This enables
+> the use of numerals as flags (eg, -9). The safest way to accept negative input is to use an _equals_ as follows:
+> `--value=-9`
 
-#### cliArguments( *path* )
+### cliArguments( *path* )
 
 Gathers all inputs after the last flag as an array at the given path.
- 
+
 > input parameters are always attached to the flag to the left of them. After a `--` on the command line
 all inputs will be gathered into the arguments.
 
-#### cliUsage( *message *)
 
-Optionally, you can add a message regarding usage. It will appear with the help text as "Usage: *command* **your message**".
+### cliParse()
 
-#### cliOnHelp( *function *)
+Commandline parsing can be conditional on the runtime environment. For example `config.when('dev').cliParse()`.
 
-Optionally, you can provide your own help handler. *function* will receive the help text as input.
+`cliParse` must be called after all other cli configuration functions.
+
+A help flag is defined for you as `-h, --help`. The flags, descriptions and defaults will be output to stdout.
+
+
+### Command Line Help
+
+Users expect `-h` or `--help` to provide help text for using your program. Help text will be generated for you from the flags and
+descriptions provided with the *cliFlags* function.
+
+When the user includes either `-h` or `--help` on the command line, the help text will be printed to stdout and the process will exit.
+
+If you use both `-h` and `--help` flags for your own purposes, then you may want to provide an alternate means to display the help text.
+
+Help text can be customized with the following methods.
+
+
+#### cliUsage( *message* )
+
+Add a message regarding usage. It will appear with the help text as "Usage: *command* **your message**".
+
+
+#### cliOnHelp( *function* )
+
+Provide your own help handler. *function* will receive the generated help text as input.
 
 If you do not include an onHelp handler of your own, **pony-config** will log the help text
 to `stdout` and call `process.exit(0)`.
 
+#### cliHelpMessage()
+
+Returns the generated help text.
+
+
 ## Locking Config Against Changes
+
 Once the configuration is set, you can lock it against further changes.  Pass *true* to have change attempts throw an exception, or set { 'exceptionOnLocked' : true } in your config options.
 Once locked, all attempts to apply or set config will do nothing (or throw an exception if exceptionOnLocked is true).
 
@@ -220,7 +255,10 @@ config objects (with the exception of functions, which are returned without clon
 
 Cloning comes with the cost of memory and cloning-time for each request, so consider the real risk and likelihood of mutations in your code before using *cloneWhenLocked*.
 
+
+
 ## Merging Configuration Sources
+
 Each configuration source is applied at the config root. When another node is added
 with an identical key path, it is merged with the previous node at that location. You can apply increasingly specific configurations at any depth
 
@@ -253,11 +291,13 @@ Often it's necessary to apply different configurations in each of your run-time 
 Configuration sources that aren't needed for the current environment are ignored, so you can declare all of your configuration sources at the top of your app and let **pony-config** apply the right ones at run-time.
 
 ### Determining the Run-time Environment
+
 **pony-config** can determine the run-time environment by searching for two kinds of environment determinants: files and environment variables. Environment variables are available on most platforms and are the most convenient. File determinants are provided for platforms that lack configurable environments variables or shells.
 
 A file Determinant is simply a text file containing a string.  For example, a file named ".env-file' containing the string 'prod'.
 
 #### findRuntimeEnvironment( *options* )
+
 1. Looks in options.**var** for the name of an environment variable.
 	a. If the environment variable exists, uses its value as the key and exits
 2. Looks in options.**path** for a file path, or an array of file paths.
@@ -269,7 +309,7 @@ A file Determinant is simply a text file containing a string.  For example, a fi
 
 Include `options.debug=true` to log the search progress to through `console.log`.
 
-> **pony-config** file paths may **~** to represent the users home directory.
+> **pony-config** file paths may use **~** (tilde) to represent the users home directory.
 
 Example
 ```javascript
@@ -293,9 +333,10 @@ Returns the current environment key. Returns ```false``` is no environment key h
 
 ### Selectively Applying Configurations
 
-*NOTE:* Environment keys are case-insensitive unless `config.options()` is called with `caseSensitiveEnvironments: false`.
+> Environment keys are case-insensitive unless `config.options()` is called with `caseSensitiveEnvironments: false`.
 
 #### when( *key* | *[keys]* )
+
 Use the *when* clause to indicate which environments should apply the source.  In any other environment, the source will be ignored. If no **when** clause is used, the source will be applied in every environment.  A **when** clause is in effect only for the next apply function.
 
 ```javascript
@@ -304,6 +345,7 @@ config.when(['prod','stage']).object({ database : 'mongodb' });
 ```
 
 #### always()
+
 Always apply the configuration source. This is the default, but it is sometimes helpful to be explicit.
 
 ```javascript
@@ -342,9 +384,11 @@ The output looks like:
 ```
 
 ### reset()
+
 Used in tests, reset clears the Config for reusing an object
 
-### options( o );
+### options( *o* )
+
 Turns on additional logging. Useful for tracing the applying of configuration files and environment search.
 
     o.debug = true | false              turns on logging (default is false)
