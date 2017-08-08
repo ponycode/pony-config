@@ -234,6 +234,15 @@ describe('useRuntimeEnvironment', function(){
         assert.equal( false, config.getRuntimeEnvironment());
     });
 
+    it('falsey stays false', function(){
+		config.useRuntimeEnvironment( false );
+		assert.equal( false, config.getRuntimeEnvironment());
+		config.useRuntimeEnvironment( undefined );
+		assert.equal( false, config.getRuntimeEnvironment());
+		config.useRuntimeEnvironment( null );
+		assert.equal( false, config.getRuntimeEnvironment());
+	});
+
     it('set environment with a string', function(){
         config.options( { caseSensitiveEnvironments: true} );
         config.useRuntimeEnvironment('Test Environment');

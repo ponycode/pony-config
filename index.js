@@ -29,7 +29,7 @@
     var ConfigStore = require('./lib/ConfigStore');
     var arrayWrap = require('./lib/array-wrap');
 
-	var CLI_FLAG_HELP = { path: "__cli_help", flags: ["h","help"], description: "Show usage" };
+    var CLI_FLAG_HELP_PATH = "$CONFIG_SHOW_HELP";
 
 	/**
 	 * Configuration State, Module-Global by design
@@ -132,7 +132,11 @@
 	 * @see findRuntimeEnvironment
 	 */
 	Config.prototype.useRuntimeEnvironment = function( environment ){
-		if( !_.isString( environment )) throw new Error("Environment must be a string");
+		if( environment === void 0 || environment === false || environment === null ){
+			this._environment = false;
+			return this;
+		}
+		if( !_.isString( environment )) throw new Error("Environment must be a string or undefined");
     	if( !this._options.caseSensitiveEnvironments ) environment = environment.toUpperCase();
         this._environment = environment;
         return this;
@@ -277,8 +281,11 @@
 	 * @return {Config}
 	 */
 	Config.prototype.require = function( modulePath ){
+		if( modulePath !== path.resolve( modulePath )){
+			console.log("Config: Warning: require parameter should be resolved. @see path.resolve" );
+		}
 		if( this._shouldApplyConfig() ){
-			this.object( require( modulePath ), "USE-FUNCTION" );
+			this.object( require( modulePath ), "USE-REQUIRE" );
 		}
 		this._whenEnvironments = false;
 		return this;
@@ -311,6 +318,7 @@
 			interpreterOptions.arguments = alternativeCommandlineArguments;
 		}
 
+		self._cliAddHelpFlagsIfNeeded();
 		self._interpreter = new argv.Interpreter( self._cliFlags, interpreterOptions );
 
 		if( self._cliArgumentsPath ){
@@ -319,7 +327,7 @@
 
 		_.each( this._cliFlags, function( flagSpec ){
 			var sourceHint = 'USE-COMMAND-LINE';
-			var value = self._getCommandlineValue( flagSpec.path );
+			var value = self._interpreter.values[ flagSpec.path ]
 			if( value === undefined && flagSpec.defaultValue !== undefined ){
 				sourceHint += '(DEFAULT)';
 				value = flagSpec.defaultValue;
@@ -339,12 +347,22 @@
 
 		this._whenEnvironments = false;
 
-		if( this._getCommandlineValue( CLI_FLAG_HELP.path ) ){
+		if( self._interpreter.values[ CLI_FLAG_HELP_PATH ]){
 			this.cliPerformHelp();
 		}
 
 		return this;
     };
+
+	Config.prototype._cliAddHelpFlagsIfNeeded = function(){
+		var helpFlags = [];
+		var allFlags = _.flatten( _.map( this._cliFlags, 'flags'));
+		if( !_.includes( allFlags, 'h' )) helpFlags.push('h');
+		if( !_.includes( allFlags, 'help')) helpFlags.push('help');
+		if( helpFlags.length > 0 ){
+			this.cliFlag( CLI_FLAG_HELP_PATH, helpFlags, 'Show command help' );
+		}
+	};
 
     function _parseFlagsParameter( flags ){
     	var flagsComponent = flags;
@@ -584,20 +602,6 @@
         	this.object( configFileData, 'USE-FILE' );
         }
     };
-
-	/**
-	 * Fetch the value of a command line argument by config key path without applying it to the config
-	 * @param configKeyPath
-	 * @return {*}
-	 * @private
-	 */
-	Config.prototype._getCommandlineValue = function( configKeyPath ){
-		if( ! this._interpreter ) {
-			console.warn( "CONFIG: call parseCommandlineArguments( usage ) before getCommandlineValue" );
-			return undefined;
-		}
-		return this._interpreter.values[ configKeyPath ];
-	};
 
 	module.exports = _config;
 })();

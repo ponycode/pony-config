@@ -4,7 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/ponycode/pony-config/badge.svg?branch=master)](https://coveralls.io/github/ponycode/pony-config?branch=master)
 [![Known Vulnerabilities](https://snyk.io/test/github/ponycode/pony-config/badge.svg)](https://snyk.io/test/github/ponycode/pony-config)
 
-> Ver 2.0.0 introduces breaking API changes
+> Ver 2.0.2 accidentally introduced breaking API changes. Use Ver 3.x.x for the latest API.
 
 Versatile, Predictable Configuration
 
@@ -206,7 +206,7 @@ to `stdout` and call `process.exit(0)`.
 
 ## Locking Config Against Changes
 Once the configuration is set, you can lock it against further changes.  Pass *true* to have change attempts throw an exception, or set { 'exceptionOnLocked' : true } in your config options.
-Once locked, all calls to set() or use...() will do nothing (or throw an exception if exceptionOnLocked is true).
+Once locked, all attempts to apply or set config will do nothing (or throw an exception if exceptionOnLocked is true).
 
 In development and testing, it's probably best to throw an exception as these are programming errors.  For example, the following code snippet only sets
 exceptionOnLocked while the environment is _dev_.
@@ -350,7 +350,7 @@ Turns on additional logging. Useful for tracing the applying of configuration fi
     o.debug = true | false              turns on logging (default is false)
     o.noColor = true | false            turns on color logging (default is false)
     o.cloneWhenLocked = true | false    turns on cloning for get() when locked (defaults false)
-    o.exceptionOnLocked = true | false  throw exception set or use called wheh locked (default is false)
+    o.exceptionOnLocked = true | false  throw exception when change attempted when locked (default is false)
 
 ### cliParse( **optional arguments string** )
 
@@ -367,17 +367,6 @@ will continue as though this string were the arguments on the command line.
 ```npm test``` or ```grunt test```
 
 For coverage, run `npm run cover`
-
-### Test Coverage (via istanbul.js)
-
-Statements   : 96% ( 408/425 )
-Branches     : 86.44% ( 204/236 )
-Functions    : 98.08% ( 51/52 )
-Lines        : 98.14% ( 370/377 )
-
-
-
-
 
 -------------------------------------------------------------------------
 ### License
