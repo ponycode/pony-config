@@ -4,7 +4,7 @@
   "description": "Small configuration loader",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test && npm run coverage",
+    "test": "mocha test",
     "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "doctoc": "doctoc --github ."
   },
@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/ponycode/pony-config",
   "devDependencies": {
-    "coveralls": "^2.13.1",
+    "coveralls": "^2.13.3",
     "expect": "~1.6.0",
     "grunt": "~0.4.5",
     "grunt-contrib-jshint": "^0.11.2",
