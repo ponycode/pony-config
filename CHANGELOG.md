@@ -13,6 +13,9 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+## Next
+- update fs-coalesce dependencies
+- adding cliStdin() to synchronously read stdin to a config path
 
 ## 3.0.1 Aug 2017
 

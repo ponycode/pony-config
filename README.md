@@ -3,8 +3,9 @@
 [![Build Status](https://travis-ci.org/ponycode/pony-config.svg?branch=master)](https://travis-ci.org/ponycode/pony-config)
 [![Coverage Status](https://coveralls.io/repos/github/ponycode/pony-config/badge.svg?branch=master)](https://coveralls.io/github/ponycode/pony-config?branch=master)
 [![Known Vulnerabilities](https://snyk.io/test/github/ponycode/pony-config/badge.svg)](https://snyk.io/test/github/ponycode/pony-config)
+_Tested on OSX, linux, and Windows 10_
 
-> Ver 2.0.2 accidentally introduced breaking API changes. Use Ver 3.x.x for the latest API.
+> Ver 2.0.2 accidentally introduced breaking API changes. Use version 3 for the latest API.
 
 Versatile, Predictable Configuration
 
