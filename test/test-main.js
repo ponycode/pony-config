@@ -181,25 +181,25 @@ describe('findRuntimeEnvironment', function(){
 
     it('search environment, search file paths, multiple paths', function(){
         config.options( { caseSensitiveEnvironments: true} );
-        config.findRuntimeEnvironment( { paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
+        config.findRuntimeEnvironment( { paths: ["test/missing-dir/missing-file", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'Test File Environment', config.getRuntimeEnvironment());
     });
 
     it('search environment, env var not found', function(){
         config.options( { caseSensitiveEnvironments: true} );
-        config.findRuntimeEnvironment( { env: "PONYCONFIG_ENV_MISSING", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
+        config.findRuntimeEnvironment( { env: "PONYCONFIG_ENV_MISSING", paths: ["test/missing-dir/missing-file", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'Test File Environment', config.getRuntimeEnvironment());
     });
 
     it('search environment, env var used', function(){
         config.options( { caseSensitiveEnvironments: true} );
-        config.findRuntimeEnvironment( { env: "PONYCONFIG_ENV", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
+        config.findRuntimeEnvironment( { env: "PONYCONFIG_ENV", paths: ["test/missing-dir/missing-file", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'ENVVAR_ENVIRONMENT', config.getRuntimeEnvironment());
     });
 
     it('search environment, env var used, debug true', function(){
         config.options( { caseSensitiveEnvironments: true} );
-        config.findRuntimeEnvironment( { debug: true, env: "PONYCONFIG_ENV", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
+        config.findRuntimeEnvironment( { debug: true, env: "PONYCONFIG_ENV", paths: ["test/missing-dir/missing-file", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'ENVVAR_ENVIRONMENT', config.getRuntimeEnvironment());
     });
 
@@ -223,7 +223,7 @@ describe('findRuntimeEnvironment', function(){
 
     it('search environment, env var not found, debug true', function(){
         config.options( { caseSensitiveEnvironments: true} );
-        config.findRuntimeEnvironment( { debug: true, env: "PONYCONFIG_ENV_MISSING", paths: [".", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
+        config.findRuntimeEnvironment( { debug: true, env: "PONYCONFIG_ENV_MISSING", paths: ["test/missing-dir/missing-file", "test/data/missing-file", "test/data/env-file"], default: 'Default Environment' } );
         assert.equal( 'Test File Environment', config.getRuntimeEnvironment());
     });
 

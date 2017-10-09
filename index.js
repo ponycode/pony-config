@@ -12,6 +12,8 @@
 
 ( function(){
 
+	"use strict";
+
     // ----------------------------
     // External dependencies
     // ----------------------------
@@ -28,6 +30,7 @@
     var argv = require('./lib/argv');
     var ConfigStore = require('./lib/ConfigStore');
     var arrayWrap = require('./lib/array-wrap');
+	var stdin = require('./lib/stdin');
 
     var CLI_FLAG_HELP_PATH = "$CONFIG_SHOW_HELP";
 
@@ -60,6 +63,9 @@
 		this._locked = false;
 		this._onHelpCallback = false;
 		this._cliUsageMessage = false;
+		this._cliStdinDescription = false;
+		this._cliStdinFlagSpec = false;
+		this._cliStdinBufferData = false;
 	}
 
 
@@ -78,6 +84,8 @@
 		this._locked = false;
 		this._onHelpCallback = false;
 		this._cliUsageMessage = false;
+		this._cliStdinFlagSpec = false;
+		this._cliStdinBufferData = false;
 	};
 
 	/**
@@ -327,23 +335,17 @@
 
 		_.each( this._cliFlags, function( flagSpec ){
 			var sourceHint = 'USE-COMMAND-LINE';
-			var value = self._interpreter.values[ flagSpec.path ]
+			var value = self._interpreter.values[ flagSpec.path ];
 			if( value === undefined && flagSpec.defaultValue !== undefined ){
 				sourceHint += '(DEFAULT)';
 				value = flagSpec.defaultValue;
 			}
-			if( value !== undefined ){
-				if( flagSpec.parser ){
-					try{
-						value = flagSpec.parser.call( null, value );
-					}catch( error ){
-						console.error( "Error parsing input for option: ", flagSpec.flags );
-						value = undefined;
-					}
-				}
-				self._configStore.set( flagSpec.path, value, _keySourceHintFrom( sourceHint, flagSpec.flags, self._whenEnvironments) );
-			}
+			self._cliApplyCommandlineValue( flagSpec.path, value, flagSpec.flags, flagSpec.parser, _keySourceHintFrom( sourceHint, flagSpec.flags, self._whenEnvironments) );
 		});
+
+		if( this._cliStdinFlagSpec && _.size( this._cliStdinBufferData ) > 0 ){
+			this._cliApplyCommandlineValue( this._cliStdinFlagSpec.path, this._cliStdinBufferData, this._cliStdinFlagSpec.flags, this._cliStdinFlagSpec.parser,  _keySourceHintFrom( 'USE-COMMAND-LINE (STDIN)', this._whenEnvironments ));
+		}
 
 		this._whenEnvironments = false;
 
@@ -353,6 +355,20 @@
 
 		return this;
     };
+
+	Config.prototype._cliApplyCommandlineValue = function( path, value, flags, parser, sourceHint ){
+		if( value !== undefined ){
+			if( parser && typeof parser === 'function'){
+				try{
+					value = parser.call( null, value );
+				}catch( error ){
+					console.error( "Error parsing input for option: ", flags );
+					value = undefined;
+				}
+			}
+			this._configStore.set( path, value, sourceHint );
+		}
+	};
 
 	Config.prototype._cliAddHelpFlagsIfNeeded = function(){
 		var helpFlags = [];
@@ -421,6 +437,37 @@
 	};
 
 	/**
+	 * Build a flagSpec from the input parameters
+	 *
+	 * @param path: String
+	 * @param flags: String or array of strings specifying command line flags
+	 * @param description: optional, String
+	 * @param optionalDefaultValue
+	 * @param optionalParser, (value) function(value)
+	 * @return {Object}
+	 */
+	Config.prototype._buildCliFlagSpec = function( path, flags, description, optionalDefaultValue, optionalParser ){
+		if( path === undefined || flags === undefined ) throw new Error( "CONFIG: cli option requires path and flags parameters" );
+		if( _.isArray( flags ) ) flags = flags.join( ',' );
+
+		if( typeof optionalDefaultValue === 'function' && arguments.length === 4 ){
+			optionalParser = optionalDefaultValue;
+			optionalDefaultValue = undefined;
+		}
+
+		var flagsData = _parseFlagsParameter( flags );
+
+		return {
+			path: path,
+			flags: flagsData.flags,
+			parameter: flagsData.parameter,
+			description: description,
+			defaultValue: optionalDefaultValue,
+			parser: optionalParser
+		};
+	};
+
+	/**
 	 *
 	 * @param path: String
 	 * @param flags: String or array of strings specifying command line flags
@@ -430,28 +477,45 @@
 	 * @return {Config}
 	 */
     Config.prototype.cliFlag = function( path, flags, description, optionalDefaultValue, optionalParser ){
-		if( path === undefined || flags == undefined ) throw new Error( "CONFIG: cli option requires path and flags parameters" );
-		if( _.isArray( flags ) ) flags = flags.join( ',' );
-
-		if( typeof optionalDefaultValue === 'function' && arguments.length === 4 ){
-			optionalParser = optionalDefaultValue;
-			optionalDefaultValue = undefined;
-		}
-
-		var flagsSpec = _parseFlagsParameter( flags );
-
-		var cliFlag = {
-			path: path,
-			flags: flagsSpec.flags,
-			parameter: flagsSpec.parameter,
-			description: description,
-			defaultValue: optionalDefaultValue,
-			parser: optionalParser
-		};
-
-		this._cliFlags.push( cliFlag );
+		this._cliFlags.push( this._buildCliFlagSpec.apply( null, arguments ) );
 		return this;
 	};
+
+	Config.prototype.cliStdin = function( path, flags, description, optionalDefaultValue, optionalParser ){
+		if( _.size( path ) === 0 ) throw new Error( "CONFIG: cliStdin requires path" );
+
+		var flagSpec = false;
+
+		if( _.size(flags) ){
+			// if flags is include, then user is declaring both a command line flag and stdin
+			flagSpec = this._buildCliFlagSpec.apply( null, arguments );
+			this._cliFlags.push( flagSpec );
+		}else{
+			if( typeof optionalDefaultValue === 'function' && arguments.length === 4 ){
+				optionalParser = optionalDefaultValue;
+				optionalDefaultValue = undefined;
+			}
+			flagSpec = {
+				path: path,
+				flags: "",
+				parameter: "",
+				description: description,
+				defaultValue: optionalDefaultValue,
+				parser: optionalParser,
+			};
+		}
+
+
+		this._cliStdinDescription = flagSpec.description;
+
+		var stdinBuffer = stdin.readSync();
+		if( stdinBuffer !== null ){
+			this._cliStdinBufferData = stdinBuffer;
+			this._cliStdinFlagSpec = flagSpec;
+		}
+		return this;
+	};
+
 
 	/**
 	 * Set path to store command line arguments that aren't matched to flags
@@ -495,6 +559,11 @@
 			output += _flagUsageLine( cliFlagSpec );
 		});
 
+		if( self._cliStdinDescription ){
+			output += "\n";
+			output += "  " + _.padStart( "<stdin>", 40 ) + " " + this._cliStdinDescription;
+		}
+
 		return output;
 	};
 
@@ -523,7 +592,7 @@
         if( options.noColor === undefined ) options.noColor = this._options.noColor;
         if( options.outputStream === undefined ) options.outputStream = console.log;
 	    var chalk = require('chalk');
-		
+
 	    chalk.enabled = ! options.noColor;
 
         var header = chalk.white.bold('CONFIG');
@@ -586,9 +655,9 @@
 
 	    var configFileNameArray = arrayWrap.wrap( configFilePath );
 	    var configFileContents = fsCoalesce.readFirstFileToExistSync( configFileNameArray );
-	    
+
 	    if( !configFileContents ) return;
-	    
+
         try{
             configFileData = JSON.parse( configFileContents );
             if( this._options.debug ) console.log('CONFIG: [' + _environment + '] Loaded config from file:', configFilePath );

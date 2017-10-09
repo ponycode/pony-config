@@ -7,12 +7,16 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
+- [Next](#next)
 - [3.0.1 Aug 2017](#301-aug-2017)
 - [3.0.0 July 2017](#300-july-2017)
 - [2.0.2 July 2017](#202-july-2017)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+## Next
+- update fs-coalesce dependencies
+- adding cliStdin() to synchronously read stdin to a config path
 
 ## 3.0.1 Aug 2017
 
