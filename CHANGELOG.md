@@ -5,7 +5,7 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+**Table of Contents**
 
 - [Next](#next)
 - [3.0.1 Aug 2017](#301-aug-2017)
@@ -14,9 +14,11 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Next
+## 3.1.0
+
+- added cliStdin() to synchronously read stdin to a config path
 - update fs-coalesce dependencies
-- adding cliStdin() to synchronously read stdin to a config path
+- modularied documenation
 
 ## 3.0.1 Aug 2017
 
