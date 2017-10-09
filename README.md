@@ -26,7 +26,7 @@ Versatile, Predictable Configuration
 - [Getting Started](#getting-started)
 - [Full API](#api)
 - [Getting Config from the Command Line](./docs/CLI_API_README.md)
-- [Debugging](./doc/DEBUGGING.md))
+- [Debugging](./doc/DEBUGGING.md)
 - [Full API](./docs/API_README.md)
 - [Examples](./examples)
 

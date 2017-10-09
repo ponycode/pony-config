@@ -8,7 +8,7 @@
 - [list( options )](#list-options-)
 - [reset()](#reset)
 - [options( *o* )](#options-o-)
-- [cliParse( **optional arguments string** )](#cliparse-optional-arguments-string-)
+- [cliParse( *optional arguments string* )](#cliparse-optional-arguments-string-)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
