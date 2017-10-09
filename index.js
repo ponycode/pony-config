@@ -17,7 +17,6 @@
     // ----------------------------
     // External dependencies
     // ----------------------------
-    var fs = require('fs');
     var _ = require('lodash');
 	var fsCoalesce = require('fs-coalesce');
 	var path = require('path');
@@ -456,10 +455,12 @@
 		}
 
 		var flagsData = _parseFlagsParameter( flags );
+		var flagsString = _flagsAsSantizedString( flagsData );
 
 		return {
 			path: path,
 			flags: flagsData.flags,
+			flagsString: flagsString,
 			parameter: flagsData.parameter,
 			description: description,
 			defaultValue: optionalDefaultValue,
@@ -527,25 +528,28 @@
     	return this;
 	};
 
-	function _flagsAsSantizedString( flagsArray ){
+	function _flagsAsSantizedString( flagsData ){
 		var flagsAsStrings = [];
-		_.each( flagsArray, function( flag ){
+		_.each( flagsData.flags, function( flag ){
 			if( flag.length === 1 ) flagsAsStrings.push( "-" + flag );
 			else flagsAsStrings.push( "--" + flag );
 		});
-		return flagsAsStrings.join(", ");
+		var flagsString = flagsAsStrings.join(", ");
+		if( flagsData.parameter ) flagsString += " " + flagsData.parameter;
+		return flagsString;
+	}
+
+	function _formatHelpColumns( col1, col2 ){
+		if( !_.isString(col1) ) col1 = "";
+		if( !_.isString(col2) ) col2 = "";
+		return "  " + _.padEnd( col1, 20 ) + "  " + col2;
 	}
 
 	function _flagUsageLine( cliFlagSpec ){
-		var line = "";
-		var flagsString = _flagsAsSantizedString( cliFlagSpec.flags );
-		if( cliFlagSpec.parameter ) flagsString += " " + cliFlagSpec.parameter;
-
-		line += "  " + _.padStart( flagsString, 40 );
-		if( cliFlagSpec.description !== undefined ) line += " " + cliFlagSpec.description;
-		if( cliFlagSpec.defaultValue !== undefined ) line += ", Default='" + cliFlagSpec.defaultValue + "'";
-		line += "\n";
-		return line;
+		var additionalInfo = [];
+		if( cliFlagSpec.description !== undefined ) additionalInfo.push( cliFlagSpec.description );
+		if( cliFlagSpec.defaultValue !== undefined ) additionalInfo.push( "default: '" + cliFlagSpec.defaultValue + "'" );
+		return _formatHelpColumns( cliFlagSpec.flagsString, additionalInfo.join(', ')) + "\n";
 	}
 
 	Config.prototype.cliHelpMessage = function(){
@@ -560,8 +564,7 @@
 		});
 
 		if( self._cliStdinDescription ){
-			output += "\n";
-			output += "  " + _.padStart( "<stdin>", 40 ) + " " + this._cliStdinDescription;
+			output += _formatHelpColumns("<stdin>", this._cliStdinDescription );
 		}
 
 		return output;

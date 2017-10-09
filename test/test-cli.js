@@ -121,7 +121,7 @@ describe('cliConfig', function(){
 
 			var help = collapseWhitespaceToOneSpace( config.cliHelpMessage() );
 
-			assert.equal( help, "Usage: test tests the cli Flags: -f, --file [filename] a file name, Default='the_file' -h, --help Show command help");
+			assert.equal( help, "Usage: test tests the cli Flags: -f, --file [filename] a file name, default: 'the_file' -h, --help Show command help");
 		});
 
 		it('calls onHelp handler when help present', function( done ){
