@@ -3,29 +3,34 @@
 **pony-config** provides the following API for collecting configuration
 from a unix-style command line interface.
 
-Inputs from the command line include
-- short flags for example, `command -a -b -2`
-- long flags, for example `command --long --silent`
-- flags with parameters, `command -o outputfile.bin`
-- argument lists, `command -a -o out.txt -- arg1 arg2 arg3`
+### Define Your Program's Command Line Interface
+
+- short flags, eg. `command -a -b -2`
+- long flags, eg. `command --long --silent`
+- flags with parameters, eg. `command -o outputfile.bin`
+- argument lists, eg. `command -a -o out.txt -- arg1 arg2 arg3`
+- read from stdin, eg. `ls -al | command -ac -o out.txt`
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+**Table of Contents**
 
-- [cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`](#cliflag-path-flags-description-default-value-opt_parser-)
-- [cliArguments( *path* )](#cliarguments-path-)
-- [cliParse()](#cliparse)
+- [Define the Command Line Interface](#define-the-command-line-interface)
+    - [cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`](#cliflag-path-flags-description-default-value-opt_parser-)
+    - [cliArguments( *path* )](#cliarguments-path-)
+    - [cliStdin( *path*, *flags | null*, *description*, *[default value]*, *[opt_parser]* )](#clistdin-path-flags--null-description-default-value-opt_parser-)
+    - [cliParse()](#cliparse)
 - [Command Line Help](#command-line-help)
-  - [cliUsage( *message* )](#cliusage-message-)
-  - [cliOnHelp( *function* )](#clionhelp-function-)
-  - [cliHelpMessage()](#clihelpmessage)
+    - [cliUsage( *message* )](#cliusage-message-)
+    - [cliOnHelp( *function* )](#clionhelp-function-)
+    - [cliHelpMessage()](#clihelpmessage)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+## Define the Command Line Interface
 
 
-### cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`
+#### cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`
 
 - `path` is the config path to store the value
 - `flags` is a comma separated list of the flags for this parameter
@@ -40,15 +45,25 @@ stored at `path`. Examples of common parsers are ParseInt, toLowerCase, splitLis
 > the use of numerals as flags (eg, -9). The safest way to accept negative input is to use an _equals_ as follows:
 > `--value=-9`
 
-### cliArguments( *path* )
+#### cliArguments( *path* )
 
 Gathers all inputs after the last flag as an array at the given path.
 
 > input parameters are always attached to the flag to the left of them. After a `--` on the command line
 all inputs will be gathered into the arguments.
 
+#### cliStdin( *path*, *flags | null*, *description*, *[default value]*, *[opt_parser]* )
 
-### cliParse()
+Attempts to read stdin, and if an input pipe is present, reads the data syncronously into a `Buffer`. Data will be stored as a `Buffer` at *path*.
+
+Optionally, set *flags* and *default value* to provide a CLI option for the same *path*. If both `stdin` and a command line flag are provided by your user, the `stdin` will
+override the CLI flag. If *flags* is set and neither `stdin` or the CLI flag are provided, the *default value* will be used.
+
+The value read from `stdin` will be a `Buffer` so that binary data may be easily input to your program. You can provide *opt_parser* to convert the data (eg, to a string) before storage.
+
+> `stdin` will be read synchronously until EOF is reached.
+
+#### cliParse()
 
 Commandline parsing can be conditional on the runtime environment. For example `config.when('dev').cliParse()`.
 
@@ -57,7 +72,7 @@ Commandline parsing can be conditional on the runtime environment. For example `
 A help flag is defined for you as `-h, --help`. The flags, descriptions and defaults will be output to stdout.
 
 
-### Command Line Help
+## Command Line Help
 
 Users expect `-h` or `--help` to provide help text for using your program. Help text will be generated for you from the flags and
 descriptions provided with the *cliFlags* function.

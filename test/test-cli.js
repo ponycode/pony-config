@@ -173,12 +173,12 @@ describe('cliConfig', function(){
 			assert.equal( config.get('path'), 'this is the data' );
 		});
 
-		it('command line input will override stdin if both provided', function(){
+		it('stdin will override command line option if both provided', function(){
 			stdinReadSyncResponse = 'this is the data';
 			config.cliStdin( 'path', '-d, --data [text]', 'A text string to process' );
 			config.cliParse( "-d the_command_line_data ");
 
-			assert.equal( config.get('path'), 'the_command_line_data' );
+			assert.equal( config.get('path'), 'this is the data' );
 		});
 
 		it('uses the parser if given', function(){

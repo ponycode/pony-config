@@ -64,6 +64,8 @@
 		this._onHelpCallback = false;
 		this._cliUsageMessage = false;
 		this._cliStdinDescription = false;
+		this._cliStdinFlagSpec = false;
+		this._cliStdinBufferData = false;
 	}
 
 
@@ -82,6 +84,8 @@
 		this._locked = false;
 		this._onHelpCallback = false;
 		this._cliUsageMessage = false;
+		this._cliStdinFlagSpec = false;
+		this._cliStdinBufferData = false;
 	};
 
 	/**
@@ -339,6 +343,10 @@
 			self._cliApplyCommandlineValue( flagSpec.path, value, flagSpec.flags, flagSpec.parser, _keySourceHintFrom( sourceHint, flagSpec.flags, self._whenEnvironments) );
 		});
 
+		if( this._cliStdinFlagSpec && _.size( this._cliStdinBufferData ) > 0 ){
+			this._cliApplyCommandlineValue( this._cliStdinFlagSpec.path, this._cliStdinBufferData, this._cliStdinFlagSpec.flags, this._cliStdinFlagSpec.parser,  _keySourceHintFrom( 'USE-COMMAND-LINE (STDIN)', this._whenEnvironments ));
+		}
+
 		this._whenEnvironments = false;
 
 		if( self._interpreter.values[ CLI_FLAG_HELP_PATH ]){
@@ -447,12 +455,12 @@
 			optionalDefaultValue = undefined;
 		}
 
-		var flagsSpec = _parseFlagsParameter( flags );
+		var flagsData = _parseFlagsParameter( flags );
 
 		return {
 			path: path,
-			flags: flagsSpec.flags,
-			parameter: flagsSpec.parameter,
+			flags: flagsData.flags,
+			parameter: flagsData.parameter,
 			description: description,
 			defaultValue: optionalDefaultValue,
 			parser: optionalParser
@@ -493,14 +501,17 @@
 				parameter: "",
 				description: description,
 				defaultValue: optionalDefaultValue,
-				parser: optionalParser
+				parser: optionalParser,
 			};
 		}
 
+
 		this._cliStdinDescription = flagSpec.description;
-		var value = stdin.readSync();
-		if( value !== null ){
-			this._cliApplyCommandlineValue( flagSpec.path, value, flagSpec.flags, flagSpec.parser,  _keySourceHintFrom( 'USE-COMMAND-LINE (STDIN)', this._whenEnvironments ));
+
+		var stdinBuffer = stdin.readSync();
+		if( stdinBuffer !== null ){
+			this._cliStdinBufferData = stdinBuffer;
+			this._cliStdinFlagSpec = flagSpec;
 		}
 		return this;
 	};

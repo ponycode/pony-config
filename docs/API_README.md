@@ -85,13 +85,17 @@ var port = config.get( "settings.server.port" );
 
 See [Command Line API](CLI_API_README.md) for the full API.
 
-#### cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`
+#### cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )
 
 Declare the command line flags and how they should be stored.
 
 #### cliArguments( *path* )
 
 Declare where to store an arguments list.
+
+#### cliStdin( *path*, *flags | null*, *description*, *[default value]*, *[opt_parser]* )
+
+Declare where to store input stream from `stdin` and provide optional cli flag for the same config data. Reads stdin synchronously.
 
 #### cliParse()
 
