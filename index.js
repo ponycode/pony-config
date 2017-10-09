@@ -287,6 +287,7 @@
 	 * @param modulePath
 	 * @return {Config}
 	 */
+	// EXPERIMENTAL - NOT READY FOR PRODUCTION. FEATURE MIGHT NOT BE INCLUDED IN FUTURE RELEASES
 	Config.prototype.require = function( modulePath ){
 		if( modulePath !== path.resolve( modulePath )){
 			console.log("Config: Warning: require parameter should be resolved. @see path.resolve" );
