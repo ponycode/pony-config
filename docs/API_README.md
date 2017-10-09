@@ -107,7 +107,7 @@ Provide a handler for contributing more complex functionality to the online help
 
 #### cliHelpMessage()
 
-Override the auto generated help with your own message.
+Returns the auto-generated help message.
 
 
 ## Merging Configuration Sources

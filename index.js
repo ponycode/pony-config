@@ -474,8 +474,28 @@
 	};
 
 	Config.prototype.cliStdin = function( path, flags, description, optionalDefaultValue, optionalParser ){
-		var flagSpec = this._buildCliFlagSpec.apply( null, arguments );
-		this._cliFlags.push( flagSpec );
+		if( _.size( path ) === 0 ) throw new Error( "CONFIG: cliStdin requires path" );
+
+		var flagSpec = false;
+
+		if( _.size(flags) ){
+			// if flags is include, then user is declaring both a command line flag and stdin
+			flagSpec = this._buildCliFlagSpec.apply( null, arguments );
+			this._cliFlags.push( flagSpec );
+		}else{
+			if( typeof optionalDefaultValue === 'function' && arguments.length === 4 ){
+				optionalParser = optionalDefaultValue;
+				optionalDefaultValue = undefined;
+			}
+			flagSpec = {
+				path: path,
+				flags: "",
+				parameter: "",
+				description: description,
+				defaultValue: optionalDefaultValue,
+				parser: optionalParser
+			};
+		}
 
 		this._cliStdinDescription = flagSpec.description;
 		var value = stdin.readSync();

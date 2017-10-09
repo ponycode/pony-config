@@ -1,7 +1,11 @@
-var assert = require("assert");
-var expect = require('expect');
+const assert = require("assert");
 
-var config = require('../index');
+const proxyquire =  require('proxyquire').noCallThru();
+var stdinReadSyncResponse = null;
+
+proxyquire('../index', { './lib/stdin': { readSync: function(){ return stdinReadSyncResponse }}});
+
+const config = require('../index');
 
 beforeEach( function(){
 	config.reset();
@@ -151,4 +155,59 @@ describe('cliConfig', function(){
 		})
 	});
 
+	describe('stdin', function(){
+
+		it('ignores stdin if return null', function(){
+			stdinReadSyncResponse = null;
+			config.cliStdin( 'path', '-d, --data [text]', 'A text string to process' );
+			config.cliParse();
+
+			assert.equal( config.get('path'), undefined );
+		});
+
+		it('reads stdin to the path', function(){
+			stdinReadSyncResponse = 'this is the data';
+			config.cliStdin( 'path', '-d, --data [text]', 'A text string to process' );
+			config.cliParse();
+
+			assert.equal( config.get('path'), 'this is the data' );
+		});
+
+		it('command line input will override stdin if both provided', function(){
+			stdinReadSyncResponse = 'this is the data';
+			config.cliStdin( 'path', '-d, --data [text]', 'A text string to process' );
+			config.cliParse( "-d the_command_line_data ");
+
+			assert.equal( config.get('path'), 'the_command_line_data' );
+		});
+
+		it('uses the parser if given', function(){
+			stdinReadSyncResponse = 'this is the lowercase data';
+			function parser(s){ return String(s).toUpperCase(); }
+			config.cliStdin( 'path', '-d, --data [text]', 'A text string to process', parser );
+			config.cliParse();
+
+			assert.equal( config.get('path'), 'THIS IS THE LOWERCASE DATA' );
+		});
+
+		it('accepts null for flags on stdin declaration', function(){
+			stdinReadSyncResponse = 'this is the data';
+			config.cliStdin( 'path', null, 'A text string to process' );
+			config.cliParse();
+
+			assert.equal( config.get('path'), 'this is the data' );
+		});
+
+		it('displays help for stdin declaration', function(){
+			stdinReadSyncResponse = 'this is the data';
+			config.cliStdin( 'path', null, 'A text string to process' );
+			config.cliParse();
+
+			var help = config.cliHelpMessage();
+
+			assert.ok( help.indexOf('<stdin>') !== -1 );
+			assert.ok( help.indexOf('A text string to process') !== -1 );
+		});
+
+	});
 });
