@@ -1,7 +1,7 @@
 var assert = require("assert");
 var expect = require('expect');
 
-var config = require('../index');
+var config = require('../../index');
 
 beforeEach( function(){
     config.reset();

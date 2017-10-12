@@ -1,6 +1,6 @@
 var assert = require("assert");
 
-var config = require('../index');
+var config = require('../../index');
 var path = require('path');
 
 beforeEach( function(){

@@ -3,9 +3,9 @@ const assert = require("assert");
 const proxyquire =  require('proxyquire').noCallThru();
 var stdinReadSyncResponse = null;
 
-proxyquire('../index', { './lib/stdin': { readSync: function(){ return stdinReadSyncResponse }}});
+proxyquire('../../index', { './lib/stdin': { readSync: function(){ return stdinReadSyncResponse }}});
 
-const config = require('../index');
+const config = require('../../index');
 
 beforeEach( function(){
 	config.reset();

@@ -4,8 +4,8 @@
   "description": "Small configuration loader",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test",
-    "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "test": "mocha test/unit-tests",
+    "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- test/unit-tests -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "doctoc": "doctoc --github ."
   },
   "repository": {
