@@ -626,7 +626,8 @@
 		if( this._shouldApplyConfig() ){
 			this._configStore.set( configKeyPath, configValue, _keySourceHintFrom( 'SET', optionalHint, this._whenEnvironments ) );
 		}
-        return this;
+		this._whenEnvironments = false;
+		return this;
     };
 
 	/**
