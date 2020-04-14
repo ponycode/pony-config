@@ -31,10 +31,6 @@
   "devDependencies": {
     "coveralls": "^3.0.11",
     "expect": "~1.6.0",
-    "grunt": "^1.1.0",
-    "grunt-contrib-jshint": "^2.1.0",
-    "grunt-env": "^1.0.1",
-    "grunt-mocha-test": "~0.12.7",
     "mocha": "^7.1.1",
     "nyc": "^15.0.1",
     "proxyquire": "^1.8.0"
