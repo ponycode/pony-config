@@ -211,7 +211,7 @@
 	 */
     Config.prototype.when = function( environments ){
         this._whenEnvironments = arrayWrap.wrap( environments );
-		if( !this._options.caseSensitiveEnvironments ) this._whenEnvironments = _.map( this._whenEnvironments, function( e ){ return e.toUpperCase() });
+		if( !this._options.caseSensitiveEnvironments ) this._whenEnvironments = _.map( this._whenEnvironments, function( e ){ return e.toUpperCase(); });
         return this;
     };
 
