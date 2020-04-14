@@ -1,6 +1,8 @@
 language: node_js
 node_js:
-  - "0"
   - "node"
-  - "7"
-  - "5"
+  - "10"
+  - "12"
+script:
+  - npm run static
+  - npm run coverage
