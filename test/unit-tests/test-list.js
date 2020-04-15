@@ -347,8 +347,34 @@ describe('List Secure Value', function() {
 		expect( out ).toNotContain('value_c');
 		expect( out ).toContain('value_d');
 		expect( out ).toContain('****');
-	});
+    });
+    
+    it('Should hide secure object value inside an array', function(){
+		config.object({
+			credentials: [
+				{ user: "user1", password: "password1" },
+				{ user: "user2", password: "password2" },
+            ]
+        });
 
+        var secure = [
+            /\.password$/
+        ]
+        
+        config.list( {outputStream: outputStream, noColor: true, secure: secure});
+        var out = log.join('/');
+        expect( out ).toContain('user');
+        expect( out ).toContain('user1');
+        expect( out ).toContain('password');
+        expect( out ).toNotContain('password1');
+        expect( out ).toContain('user');
+        expect( out ).toContain('user2');
+        expect( out ).toContain('password');
+        expect( out ).toNotContain('password2');
+
+        expect( out ).toContain('****');
+
+    });
 });
 
 describe('List formatter option', function() {
