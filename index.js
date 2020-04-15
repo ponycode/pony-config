@@ -211,7 +211,7 @@
 	 */
     Config.prototype.when = function( environments ){
         this._whenEnvironments = arrayWrap.wrap( environments );
-		if( !this._options.caseSensitiveEnvironments ) this._whenEnvironments = _.map( this._whenEnvironments, function( e ){ return e.toUpperCase() });
+		if( !this._options.caseSensitiveEnvironments ) this._whenEnvironments = _.map( this._whenEnvironments, function( e ){ return e.toUpperCase(); });
         return this;
     };
 
@@ -384,7 +384,7 @@
     	var flagsComponent = flags;
     	var parameterComponent = null;
 
-    	var parameterMatch = flags.match(/(^[^\[\<]*)(\[.*\])|(\<.*\>)/);
+    	var parameterMatch = flags.match(/(^[^\[<]*)(\[.*\])|(<.*>)/);
     	if( parameterMatch ){
     		flagsComponent = parameterMatch[1];
     		parameterComponent = parameterMatch[2];
