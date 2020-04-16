@@ -3,16 +3,12 @@
 [![Build Status](https://travis-ci.org/ponycode/pony-config.svg?branch=master)](https://travis-ci.org/ponycode/pony-config)
 [![Coverage Status](https://coveralls.io/repos/github/ponycode/pony-config/badge.svg?branch=master)](https://coveralls.io/github/ponycode/pony-config?branch=master)
 [![Known Vulnerabilities](https://snyk.io/test/github/ponycode/pony-config/badge.svg)](https://snyk.io/test/github/ponycode/pony-config)
-_Tested on OSX, linux, and Windows 10_
-
-> Ver 2.0.2 accidentally introduced breaking API changes. Use version 3 for the latest API.
 
 Versatile, Predictable Configuration
 
-#### Sources are merged predictably
-- Config propertes are extended and replaced recursively
-- Powerful debug trace of each config value's source
-- Makes it easy to set defaults, load common configurations, and override with environment specific config.
+```js
+config.get('best.configuration.library')
+```
 
 #### Configuration can be combined from many sources
 - JSON files
@@ -21,23 +17,19 @@ Versatile, Predictable Configuration
 - Environment Variables
 - Programmatically
 
-## Table of Contents
-
-- [Getting Started](#getting-started)
-- [Full API](#api)
-- [Getting Config from the Command Line](./docs/CLI_API_README.md)
-- [Debugging](./doc/DEBUGGING.md)
-- [Full API](./docs/API_README.md)
-- [Examples](./examples)
-
-## What you need to know
+#### Configuration sources are merged predictably
+- Config properties are extended and replaced recursively
+- Powerful debug trace of each config value's source
+- Makes it easy to set defaults, load common configurations, and override with environment specific config.
 
 #### Configuration is easily accessed through dot paths
-Both `get` and `set` methods support dot paths, for example ```get('name.first')```
+Both `get` and `set` methods support dot paths, for example `get('name.first')`
 
-#### Select Configuration for each Run-Time Environment
+#### Different Configuration for each Run-Time Environment
 
-Configuration can be selected at run-time for each of your environments, for example Production, Stage, Dev, Dev-Josh, Dev-Scott.
+Configuration can be selected at run-time for each of your environments, 
+for example Production, Stage, Dev, Dev-Josh, Dev-Scott.
+
 The run-time environment is determined by searching file paths and environment variables.
 
 ```javascript
@@ -47,18 +39,14 @@ config.findRuntimeEnvironment({
     default:'prod');
 ```
 
-## An Example: Combining Sources
+## Sources can be applied in layers
 
 ```javascript
 var config = require('pony-config');
 
 config
-.file('common-config.json')
-.when('test').file('local-config.json');
-
-var name = config.get('name');
-var street = config.get('address.street');
-config.set('verified', true);
+.file('common-config.json')                 // common for all environments
+.when('test').file('local-config.json');    // test only configuration
 ```
 
 > See more examples [here](./examples).
@@ -71,36 +59,27 @@ The config module is a singleton. Set up your configuration in your main file at
 
 `var config = require('pony-config');`
 
-
-## API
-
-See the [api documentation](./docs/API_README.md) for the full **pony-config** API documentation.
-
-## Getting Config from the Command Line
-
-Configuration can be applied from the command line and combined with the rest of your config.
-
-**Example**
-
-`funnyprogram -w 650 -a -- hamster.jpg`
-
-```javascript
-config
-.cliFlag( "settings.width", "-w, --width [pixels]", "resize image to fit width in pixels" },
-.cliFlag( "settings.appendMode", "-a, --append", "run program in append mode" },
-.cliFlag( "silentMode", "-s, --silent", "run program in silent mode" },
-.cliArguments( "inputs.files" )
-.cliParse()
-```
-
-See the [CLI API](./docs/CLI_API_README.md) for more.
+See the [api documentation](docs/API.md) for the full **pony-config** API documentation.
 
 ## Debugging
 
 **pony-conifg** provides several tools to help you debug your configuration. See 
-the [debugging documentation](./docs/DEBUGGING_README.md) for the debug API.
+the [debugging documentation](docs/DEBUG_API.md) for the debug API.
 
+## Secure Keys
 
+> Always store key files outside of your repo
+
+In production, keys are often served to applications through environment variables,
+while locally keys live on the file system. To keep keys safe, store them outside your repo,
+for example, in `~/keys/` and use *pony-config* to load the appropriate key.
+
+```js
+config
+    .when('dev').file('~/keys/secret.key')
+    .when('prod').env( 'secret', 'SECRET_API_KEY')
+```
+ 
 ### See Also
 **pony-config** uses
 - [minimist](https://www.npmjs.com/package/minimist) for command line argument parsing because it does exactly one thing and does it well.
@@ -108,10 +87,10 @@ the [debugging documentation](./docs/DEBUGGING_README.md) for the debug API.
 
 ### Tests
 
-`npm test` or `grunt test`
+`npm test`
 
 For coverage, run `npm run coverage`
 
 -------------------------------------------------------------------------
 ### License
-Copyright (c) 2014 PonyCode Corporation Licensed under the MIT license.
+Copyright (c) 2014,2020 PonyCode Corporation Licensed under the MIT license.

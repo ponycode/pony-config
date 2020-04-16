@@ -1,11 +1,12 @@
 
-# Debugging API
+# Debug API
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [list( options )](#list-options-)
+
+- [list( *options* )](#list-options-)
+- [securing configuration data](#securing-configuration-data)
 - [reset()](#reset)
 - [options( *o* )](#options-o-)
 - [cliParse( *optional arguments string* )](#cliparse-optional-arguments-string-)
@@ -25,7 +26,7 @@ options are:
     maxListDepth                      number of levels of config to list (default is 8, minimum 0)
     maxListValueLength                length of values to output, truncated if longer (default is 80)
     outputStream                      an object to be called instead of console.log for the output
-    o.secure						  array of keyPaths.  values at each keyPaths will be logged as "****"
+    secure						      array of keyPaths (strings and RegExps), values at each keyPaths will be logged as "****"
     caseSensitiveEnvironments         compare environments with case sensitivity, thus dev != 'DEV', default is false
                                       *note* in pony-config 1.0.x, the default behavior was case sensitivity
     formatter                         optional function taking ( value, keyPath ) and returning value, possibly modified (eg, converted to hex)
@@ -43,6 +44,14 @@ The output looks like:
     |--zip-state : 49013-CA  [SET]
 ```
 
+### securing configuration data
+
+Use the `secure` properties in `options` to prevent configuration data from being logged by `list()`.
+
+The `secure` property is a list of strings and regular expressions that will contain sensitive data.
+For example, `{ secure: ["google.api-token", /\.password$/] }` would prevent your api token and all password fields
+from being logged to the console by `list()`
+ 
 ### reset()
 
 Used in tests; clears the configuration.
@@ -53,7 +62,7 @@ Turns on additional logging. Useful for tracing the applying of configuration fi
 
     o.debug = true | false              turns on logging (default is false)
     o.noColor = true | false            turns on color logging (default is false)
-    o.cloneWhenLocked = true | false    turns on cloning for get() when locked (defaults false)
+    o.cloneWhenLocked = true | false    turns on cloning for values returned by get() when locked (defaults false)
     o.exceptionOnLocked = true | false  throw exception when change attempted when locked (default is false)
 
 ### cliParse( *optional arguments string* )
