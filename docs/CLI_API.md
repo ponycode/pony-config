@@ -3,19 +3,11 @@
 **pony-config** provides the following API for collecting configuration
 from a unix-style command line interface.
 
-### Define Your Program's Command Line Interface
-
-- short flags, eg. `command -a -b -2`
-- long flags, eg. `command --long --silent`
-- flags with parameters, eg. `command -o outputfile.bin`
-- argument lists, eg. `command -a -o out.txt -- arg1 arg2 arg3`
-- read from stdin, eg. `ls -al | command -ac -o out.txt`
-
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [Define the Command Line Interface](#define-the-command-line-interface)
+  - [Define Your Program's Command Line Interface](#define-your-programs-command-line-interface)
     - [cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`](#cliflag-path-flags-description-default-value-opt_parser-)
     - [cliArguments( *path* )](#cliarguments-path-)
     - [cliStdin( *path*, *flags | null*, *description*, *[default value]*, *[opt_parser]* )](#clistdin-path-flags--null-description-default-value-opt_parser-)
@@ -27,7 +19,13 @@ from a unix-style command line interface.
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Define the Command Line Interface
+### Define Your Program's Command Line Interface
+
+- short flags, eg. `command -a -b -2`
+- long flags, eg. `command --long --silent`
+- flags with parameters, eg. `command -o outputfile.bin`
+- argument lists, eg. `command -a -o out.txt -- arg1 arg2 arg3`
+- read from stdin, eg. `ls -al | command -ac -o out.txt`
 
 
 #### cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`

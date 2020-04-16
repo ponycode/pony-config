@@ -29,7 +29,7 @@
     - [isRuntimeEnvironment( *environment* )](#isruntimeenvironment-environment-)
     - [getRuntimeEnvironment()](#getruntimeenvironment)
   - [Selectively Applying Configurations](#selectively-applying-configurations)
-    - [when( *key* | *[keys]* )](#when-key--keys-)
+    - [when( *environment* | *[environments]* )](#when-environment--environments-)
     - [always()](#always)
 - [Locking Config Against Changes](#locking-config-against-changes)
     - [lock( *boolean* )](#lock-boolean-)
@@ -203,7 +203,7 @@ Results in
         last: "Moneybags",         // from first source
         nickname: "Buckaroo" },    // extended from "name" node in second source
     age: 10,                       // from first source
-    gender: "male"                  // extended by second source
+    gender: "male"                 // extended by second source
 }
 ```
 
@@ -251,20 +251,21 @@ config.useRuntimeEnvironment('prod');
 ```
 
 #### isRuntimeEnvironment( *environment* )
-You can check the run-time environment that was resolved by **pony-config**. Takes into account case sensitivity options. The default
-is case-insensitive comparison.
+You can check the run-time environment that was resolved by **pony-config**. Takes into account case sensitivity options. 
+The default is **case-insensitive comparison**.
 
 #### getRuntimeEnvironment()
-Returns the current environment key. Returns ```false``` is no environment key has been set.
+Returns the current environment key. Returns `false` is no environment key has been set.
 
 
 ### Selectively Applying Configurations
 
 > Environment keys are case-insensitive unless `config.options()` is called with `caseSensitiveEnvironments: false`.
 
-#### when( *key* | *[keys]* )
+#### when( *environment* | *[environments]* )
 
-Use the *when* clause to indicate which environments should apply the source.  In any other environment, the source will be ignored. If no **when** clause is used, the source will be applied in every environment.  A **when** clause is in effect only for the next apply function.
+Use the **when** clause to indicate which environments should apply the source. In any other environments, this source will be ignored. 
+If no **when** clause is used, the source will be applied in every environment. A **when** clause is in effect only for the next _apply_ function.
 
 ```javascript
 config.when('prod').file('productionConfig.json');
