@@ -7,7 +7,8 @@
     "test": "mocha test/unit-tests",
     "static": "jshint lib/ index.js",
     "coverage": "nyc --reporter=lcov npm run test && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
-    "prepublish": "doctoc --notitle --maxlevel 4 docs CHANGELOG.md"
+    "prepublish": "npm run snyk-protect && doctoc --notitle --maxlevel 4 docs CHANGELOG.md",
+    "snyk-protect": "snyk protect"
   },
   "repository": {
     "type": "git",
@@ -42,6 +43,8 @@
     "chalk": "^1.1.3",
     "fs-coalesce": "^0.1.4",
     "lodash": "^4.17.2",
-    "minimist": "^1.2.5"
-  }
+    "minimist": "^1.2.5",
+    "snyk": "^1.317.0"
+  },
+  "snyk": true
 }
