@@ -5,9 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha test/unit-tests",
+    "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- test/unit-tests -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "doctoc": "doctoc --github .",
+    "snyk-protect": "snyk protect",
     "static": "jshint lib/ index.js",
-    "coverage": "nyc --reporter=lcov npm run test && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
-    "prepublish": "doctoc --notitle --maxlevel 4 docs CHANGELOG.md"
+    "prepublish": "npm run snyk-protect ; doctoc --notitle --maxlevel 4 docs CHANGELOG.md"
   },
   "repository": {
     "type": "git",
@@ -42,6 +44,8 @@
     "chalk": "^1.1.3",
     "fs-coalesce": "^0.1.4",
     "lodash": "^4.17.20",
-    "minimist": "^1.2.5"
-  }
+    "minimist": "^1.1.3",
+    "snyk": "^1.386.0"
+  },
+  "snyk": true
 }
