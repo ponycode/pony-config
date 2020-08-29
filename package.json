@@ -41,7 +41,7 @@
   "dependencies": {
     "chalk": "^1.1.3",
     "fs-coalesce": "^0.1.4",
-    "lodash": "^4.17.16",
+    "lodash": "^4.17.20",
     "minimist": "^1.2.5"
   }
 }
