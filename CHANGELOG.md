@@ -5,20 +5,28 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
 
-- [Next](#next)
+
+- [4.0.1 Apr 2020](#401-apr-2020)
+- [3.1.0](#310)
 - [3.0.1 Aug 2017](#301-aug-2017)
 - [3.0.0 July 2017](#300-july-2017)
 - [2.0.2 July 2017](#202-july-2017)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+## 4.0.1 Apr 2020
+
+- removed support for node before 10
+- added capability to secure config in the list() output with a regular expression pattern
+- resolved dependency vulnerabilities 
+- documentation cleanup
+
 ## 3.1.0
 
 - added cliStdin() to synchronously read stdin to a config path
 - update fs-coalesce dependencies
-- modularied documenation
+- modularized documentation
 
 ## 3.0.1 Aug 2017
 

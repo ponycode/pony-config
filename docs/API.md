@@ -1,16 +1,22 @@
 # API Documentation
 
-## In This Document
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
 - [Overview](#overview)
-- [Applying Configuration Sources](#applying-configuration-sources)
+- [Using Configuration Data](#using-configuration-data)
+    - [get( *keypath* )](#get-keypath-)
+- [Setting the Configuration from Multiple Sources](#setting-the-configuration-from-multiple-sources)
     - [object( *object* )](#object-object-)
     - [file( *filepath* )](#file-filepath-)
-    - [env( *path*, *variable name* )](#env-path-variable-name-)
-- [Command Line API](#command-line-api)
-    - [cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )`](#cliflag-path-flags-description-default-value-opt_parser-)
+    - [Programmatic Configuration from JavaScript](#programmatic-configuration-from-javascript)
+    - [set( *keypath*, *value* )](#set-keypath-value-)
+    - [env( *keypath*, *variable name* )](#env-keypath-variable-name-)
+  - [Command Line API](#command-line-api)
+    - [cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )](#cliflag-path-flags-description-default-value-opt_parser-)
     - [cliArguments( *path* )](#cliarguments-path-)
+    - [cliStdin( *path*, *flags | null*, *description*, *[default value]*, *[opt_parser]* )](#clistdin-path-flags--null-description-default-value-opt_parser-)
     - [cliParse()](#cliparse)
     - [cliUsage( *message* )](#cliusage-message-)
     - [cliOnHelp( *function* )](#clionhelp-function-)
@@ -23,14 +29,14 @@
     - [isRuntimeEnvironment( *environment* )](#isruntimeenvironment-environment-)
     - [getRuntimeEnvironment()](#getruntimeenvironment)
   - [Selectively Applying Configurations](#selectively-applying-configurations)
-    - [when( *key* | *[keys]* )](#when-key--keys-)
+    - [when( *environment* | *[environments]* )](#when-environment--environments-)
     - [always()](#always)
 - [Locking Config Against Changes](#locking-config-against-changes)
     - [lock( *boolean* )](#lock-boolean-)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-### Overview
+## Overview
 
 In your main file, setup your configuration by combining sources.
 
@@ -41,14 +47,56 @@ In your main file, setup your configuration by combining sources.
 
 In your code, `require('pony-config')` and use the resolved configuration with `get()`.
 
-## Applying Configuration Sources
+## Using Configuration Data
 
-Configuration sources are applied via the following functions. As configuration
-sources are applied, new values will replace or extend previously applied
-values at the same key paths.
+Configuration is stored in an object hierarchy, 
+and can be any of the native JavaScript types:
 
-Application of each configuration source can be conditional on the run time environemnt.
-See the
+* Object
+* Array
+* Number
+* String
+* Function
+* Buffer
+* RegExp
+
+For Example:
+```
+config
+  |
+  |--address:
+  |     |--street : 24 Merry Way
+  |     |--zip : 49013
+  |     |--state : CA
+  |     |--zip-state : 49013-CA
+  |
+  |--user:
+        |--name: Jimmy
+        |--avatar: [Buffer]
+```
+
+Retrieve any portion of the configuration with the `get()` command
+
+#### get( *keypath* )
+
+Read from your config with `get( keypath )` where `keypath` identifies the configuration you need.
+Keypaths are `.` (dot) delimited strings.
+
+For example, `get( 'user' )`, `get( 'user.avatar' )`, `get( 'address.zip-state' )`.
+
+The special case `.` will retrieve the entire configuration.
+
+
+## Setting the Configuration from Multiple Sources
+
+Configuration is normally set up at program start, from multiple sources. 
+These sources can be overlaid, replacing or extending the configuration,
+and can each depend on the run time environment (e.g., development, test, production)
+
+All configuration setting methods may be combined with the [when clause](#selectively-applying-configurations) to apply
+them conditionally.
+
+Configuration sources are applied via the following methods. 
 
 #### object( *object* )
 Useful for creating a default configuration, the object will be applied at the root of the configuration.
@@ -67,23 +115,41 @@ config.object({
 #### file( *filepath* )
 
 Applies the contents of a `JSON` file found at the filepath. If the file
-doesn't exist the config is unchanged. If the file is unreadable
-(or not JSON), the config will not be changed.
+doesn't exist, is unreadable (or not parsable JSON), the config will not be changed.
 
 
-#### env( *path*, *variable name* )
+#### Programmatic Configuration from JavaScript
+
+Define configuration in a node module, which resolves to an object, for example
+
+```javascript
+// configuration.js
+module.exports = {
+    value: coolFunctionToComputeConfigurationValue( numerousSystemFactors )
+}
+```
+
+and combine into your configuration with `config.object( require('./configuration.js'))`
+
+#### set( *keypath*, *value* )
+
+Set's the configuration value at *keypath* to *value*. The value may be any value,
+and will be merged as usual.
+
+#### env( *keypath*, *variable name* )
 
 Variables from `process.env` can be accessed by name, and their contents stored at the given key path.
-If the environmnet variable isn't found, the config is unchanged.
+If the environment variable isn't found, the config is unchanged.
 
 ```javascript
 config.env( "settings.server.port", "PORT");
 var port = config.get( "settings.server.port" );
 ```
 
-## Command Line API
+### Command Line API
 
-See [Command Line API](CLI_API_README.md) for the full API.
+Configuration options passed into the application can also be merged in.
+See [Command Line API](CLI_API.md).
 
 #### cliFlag( *path*, *flags*, *description*, *[default value]*, *[opt_parser]* )
 
@@ -117,7 +183,11 @@ Returns the auto-generated help message.
 ## Merging Configuration Sources
 
 Each configuration source is applied at the config root. When another node is added
-with an identical key path, it is merged with the previous node at that location. You can apply increasingly specific configurations at any depth
+with an identical key path, it is merged with the previous node at that location.
+
+Objects and arrays will be merged, while other data types (numbers, buffers, functions) are replaced.
+ 
+You can apply increasingly specific configurations at any depth.
 
 For example,
 ```javascript
@@ -128,19 +198,19 @@ config.object( { name : { nickname : "Buckaroo" }, gender : "male" } );
 Results in
 ```javascript
 {
-    name : {
-        first : "Mike",             // from first source
-        last : "Moneybags",         // from first source
-        nickname : "Buckaroo" },    // extended from "name" node in second source
-    age : 10,                       // from first source
-    gender : male                   // extended by second source
+    name: {
+        first: "Mike",             // from first source
+        last: "Moneybags",         // from first source
+        nickname: "Buckaroo" },    // extended from "name" node in second source
+    age: 10,                       // from first source
+    gender: "male"                 // extended by second source
 }
 ```
 
 
 ## Run-time Environment Configuration
 
-Often it's necessary to apply different configurations in each of your run-time environments.
+Often it's necessary to apply different configurations for each of your run-time environments.
 
 1. Tell **pony-config** how to determine the run-time environment
 2. Indicate which configuration sources are to be applied for which environments
@@ -181,20 +251,21 @@ config.useRuntimeEnvironment('prod');
 ```
 
 #### isRuntimeEnvironment( *environment* )
-You can check the run-time environment that was resolved by **pony-config**. Takes into account case sensitivity options. The default
-is case-insensitive comparison.
+You can check the run-time environment that was resolved by **pony-config**. Takes into account case sensitivity options. 
+The default is **case-insensitive comparison**.
 
 #### getRuntimeEnvironment()
-Returns the current environment key. Returns ```false``` is no environment key has been set.
+Returns the current environment key. Returns `false` is no environment key has been set.
 
 
 ### Selectively Applying Configurations
 
 > Environment keys are case-insensitive unless `config.options()` is called with `caseSensitiveEnvironments: false`.
 
-#### when( *key* | *[keys]* )
+#### when( *environment* | *[environments]* )
 
-Use the *when* clause to indicate which environments should apply the source.  In any other environment, the source will be ignored. If no **when** clause is used, the source will be applied in every environment.  A **when** clause is in effect only for the next apply function.
+Use the **when** clause to indicate which environments should apply the source. In any other environments, this source will be ignored. 
+If no **when** clause is used, the source will be applied in every environment. A **when** clause is in effect only for the next _apply_ function.
 
 ```javascript
 config.when('prod').file('productionConfig.json');
